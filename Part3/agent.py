@@ -17,6 +17,7 @@ import os  # reads environment variables like your API key
 import json  # converts between Python objects and JSON text
 import datetime  # used to add a timestamp when we save messages to history
 from dotenv import load_dotenv  # reads your .env file so the API key stays secret
+from tools import run_command, write_file, read_file
 
 
 # ─── SECTION 2: CONFIGURATION ───────────────────────────────
