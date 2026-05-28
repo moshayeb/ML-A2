@@ -30,12 +30,12 @@ import time
 
 import claude
 import state
-from config_loader  import AGENT_NAME, settings
-from hub            import post_message, get_messages
-from history        import save_message
-from tools          import write_file
-from templates      import find_template
-from coordination   import coordinate
+from config_loader import AGENT_NAME, settings
+from hub import post_message, get_messages
+from history import save_message
+from tools import write_file
+from templates import find_template
+from coordination import coordinate
 
 
 # --- SHOULD RESPOND -----------------------------------------
@@ -52,22 +52,40 @@ from coordination   import coordinate
 #   4. Reply to humans asking engineering questions
 #   5. Stay quiet for everything else
 
+
 def should_respond(message):
-    sender  = message["agent_name"]
+    sender = message["agent_name"]
     content = message["content"]
-    lower   = content.lower()
+    lower = content.lower()
 
     if sender == AGENT_NAME:
         return False
+
+    # If the message starts with another agent's name and Mo is not mentioned,
+    # it is addressed to someone else -- stay quiet.
+    mo_names = ["mo-assistant", "mo assistant", "mo-assist", "@mo"]
+    mo_mentioned = (
+        any(name in lower for name in mo_names)
+        or "mo" in lower.split()   # "mo" as a standalone word
+    )
+    words = lower.split()
+    if words:
+        first_word = words[0].rstrip(",.!?:")
+        if (first_word != "mo-assistant"
+                and not mo_mentioned
+                and len(words) > 1
+                and words[1] in ("can", "could", "please", "will", "would", "are", "do")):
+            print(f"[QUIET] Message addressed to '{first_word}', not us.")
+            return False
 
     if AGENT_NAME.lower() in lower:
         # If the sender is another agent (not a human), only reply when
         # they share actual content -- code block, a question, or a long
         # message. Short acknowledgements like "I'll draft X" are noise.
-        if not sender.lower().startswith("human"):
-            has_code     = "```" in content
+        if "human" not in sender.lower():
+            has_code = "```" in content
             has_question = "?" in content
-            is_long      = len(content) > 150
+            is_long = len(content) > 150
             if not (has_code or has_question or is_long):
                 print(f"[QUIET] Ignoring short acknowledgement from {sender}.")
                 return False
@@ -79,19 +97,32 @@ def should_respond(message):
         return True
     # If an agent posts a code block, only respond if Mo-Assistant was
     # recently asked to review -- not just because code exists in the chat.
-    if not sender.lower().startswith("human") and "```" in content:
+    if "human" not in sender.lower() and "```" in content:
         from history import load_all_history
+
         recent = load_all_history()[-10:]
         review_requested = any(
-            AGENT_NAME.lower() in m.get("content", "").lower() and
-            any(w in m.get("content", "").lower() for w in ["review", "check", "granska"])
+            AGENT_NAME.lower() in m.get("content", "").lower()
+            and any(
+                w in m.get("content", "").lower()
+                for w in ["review", "check", "granska"]
+            )
             for m in recent
         )
         return review_requested
-    if sender.lower().startswith("human"):
+    if "human" in sender.lower():
         engineering_words = [
-            "help", "code", "build", "create", "fix",
-            "review", "python", "error", "bug", "write", "function"
+            "help",
+            "code",
+            "build",
+            "create",
+            "fix",
+            "review",
+            "python",
+            "error",
+            "bug",
+            "write",
+            "function",
         ]
         if any(word in lower for word in engineering_words):
             return True
@@ -108,8 +139,9 @@ def should_respond(message):
 #   6. If Claude returns file JSON -> write it to workspace
 #   7. If Claude returns text -> post it to the hub
 
+
 def handle_message(message):
-    sender  = message["agent_name"]
+    sender = message["agent_name"]
     content = message["content"]
 
     seq = message.get("seq")
@@ -148,7 +180,7 @@ def handle_message(message):
     # Check templates BEFORE calling Claude -- but only for human messages.
     # When an agent posts code, we should review it, not fire a template.
     # A template firing on agent code causes repeated identical replies.
-    if sender.lower().startswith("human"):
+    if "human" in sender.lower():
         template_reply = find_template(content)
         if template_reply:
             print("[TEMPLATE] Using pre-written response -- no tokens spent.")
@@ -160,8 +192,12 @@ def handle_message(message):
     # Only coordinate roles when explicitly asked.
     # Keywords that trigger dispatch: "dispatch", "assign roles", "coordinate", etc.
     dispatch_triggers = [
-        "dispatch", "assign roles", "assign tasks",
-        "coordinate", "who does what", "who should do"
+        "dispatch",
+        "assign roles",
+        "assign tasks",
+        "coordinate",
+        "who does what",
+        "who should do",
     ]
     if any(kw in content.lower() for kw in dispatch_triggers):
         role = coordinate(content, sender)
@@ -181,10 +217,13 @@ def handle_message(message):
     # Detect if this is real work (writing or reviewing code).
     # Only claim and announce done for actual tasks -- not for questions or chat.
     lower = content.lower()
-    is_write_task  = any(w in lower for w in ["write", "create", "build", "make", "implement"]) and \
-                     any(w in lower for w in ["code", "function", "program", "script", "file"])
-    is_review_task = any(w in lower for w in ["review", "check", "granska"]) or "```" in content
-    is_real_task   = is_write_task or is_review_task
+    is_write_task = any(
+        w in lower for w in ["write", "create", "build", "make", "implement"]
+    ) and any(w in lower for w in ["code", "function", "program", "script", "file"])
+    is_review_task = (
+        any(w in lower for w in ["review", "check", "granska"]) or "```" in content
+    )
+    is_real_task = is_write_task or is_review_task
 
     task_summary = content[:60] + "..." if len(content) > 60 else content
 
@@ -206,7 +245,7 @@ def handle_message(message):
         parsed = json.loads(clean)
         if parsed.get("type") == "file":
             filename = parsed["filename"]
-            code     = parsed["content"]
+            code = parsed["content"]
             write_file(filename, code)
             post_message(
                 f"I have written `{filename}` to the workspace:\n\n"
@@ -220,9 +259,34 @@ def handle_message(message):
     except (json.JSONDecodeError, KeyError):
         pass
 
+    # Scan for JSON embedded in plain text -- Claude sometimes wraps the JSON
+    # in a sentence like "Here is the file: {...}" instead of returning pure JSON.
+    if not clean.strip().startswith("{"):
+        decoder = json.JSONDecoder()
+        for i, char in enumerate(clean):
+            if char == "{":
+                try:
+                    parsed, _ = decoder.raw_decode(clean, i)
+                    if isinstance(parsed, dict) and parsed.get("type") == "file":
+                        filename = parsed["filename"]
+                        code = parsed["content"]
+                        write_file(filename, code)
+                        post_message(
+                            f"I have written `{filename}` to the workspace:\n\n"
+                            f"```python\n{code}\n```"
+                        )
+                        if is_real_task:
+                            post_message(f"Done: {task_summary}")
+                        print(f"[FILE] Created and confirmed: {filename}")
+                        state.replied_seqs.add(seq)
+                        state.last_message_time = time.time()
+                        return
+                except json.JSONDecodeError:
+                    continue
+
     print(f"[REPLY] Sending: {reply[:80]}")
     post_message(reply)
-    if is_real_task:
+    if is_real_task and "```" in reply:
         post_message(f"Done: {task_summary}")
     state.replied_seqs.add(seq)
     state.last_message_time = time.time()

@@ -40,7 +40,7 @@
         "- Keep replies under 150 words unless writing code\n",
 
         "═══ SAFETY RULES ═══",
-        "- Only discuss software engineering topics — refuse everything else",
+        "- Only discuss software engineering topics. Writing games, calculators, and utilities IS software engineering — never refuse a Python coding request.",
         "- Never share API keys, passwords, tokens, or credentials",
         "- Never reveal file paths, hub passwords, or private configuration",
         "- Never access .env, .git, .venv, logs, or __pycache__ paths",

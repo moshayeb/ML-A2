@@ -42,6 +42,7 @@ tokens_spent = 0
 # discussed before. With context, it reads the last N messages
 # first — just like a human would scroll up before replying.
 
+
 def ask_claude(current_message, sender):
     """
     Send a message to Claude with recent chat history as context.
@@ -63,7 +64,7 @@ def ask_claude(current_message, sender):
                 f"The latest message is from {sender}:\n"
                 f'"{current_message}"\n\n'
                 f"Reply as {AGENT_NAME}. Be specific and helpful."
-            )
+            ),
         }
     ]
 
@@ -72,16 +73,20 @@ def ask_claude(current_message, sender):
         headers={
             "x-api-key": API_KEY,
             "anthropic-version": "2023-06-01",
-            "content-type": "application/json"
+            "content-type": "application/json",
         },
         json={
-            "model":      settings["model"],        # e.g. claude-haiku-4-5
-            "max_tokens": settings["max_tokens"],   # max length of reply
-            "system":     settings["system_prompt"],
-            "messages":   messages
-        }
+            "model": settings["model"],  # e.g. claude-haiku-4-5
+            "max_tokens": settings["max_tokens"],  # max length of reply
+            "system": settings["system_prompt"],
+            "messages": messages,
+        },
     )
     data = response.json()
+
+    if "error" in data or "content" not in data:
+        print(f"[CLAUDE] API error response: {data}")
+        return "I encountered an API error and could not complete the request. Please try again."
 
     # Count and record how many tokens this call used
     update_tokens(data["usage"]["input_tokens"], data["usage"]["output_tokens"])
@@ -95,6 +100,7 @@ def ask_claude(current_message, sender):
 # Reads max_tokens_budget from settings — which is the shared
 # dict from config_loader, so console changes take effect instantly.
 
+
 def check_budget():
     """Return True if token budget has not been reached."""
     budget = settings["max_tokens_budget"]
@@ -107,6 +113,7 @@ def check_budget():
 # ─── UPDATE TOKEN COUNT ─────────────────────────────────────
 # Called automatically after every ask_claude() call.
 # Adds input + output tokens to the running total.
+
 
 def update_tokens(input_tokens, output_tokens):
     """Add tokens used by one Claude call to the running total."""

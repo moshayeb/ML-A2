@@ -44,27 +44,31 @@
 # ─── TEMPLATES ──────────────────────────────────────────────
 
 TEMPLATES = [
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 1: IDENTITY & STATUS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "who are you", "what are you", "introduce yourself",
-            "your name", "what is mo-assistant", "tell me about yourself"
+            "who are you",
+            "what are you",
+            "introduce yourself",
+            "your name",
+            "what is mo-assistant",
+            "tell me about yourself",
         ],
         "response": (
             "I am Mo-Assistant, a software engineering agent built by Mo. "
             "I can write Python code, review and debug code, answer software "
             "engineering questions, and collaborate with other agents on projects."
-        )
+        ),
     },
-
     {
         "keywords": [
-            "what can you do", "your capabilities", "what do you do",
-            "how can you help", "what are your skills"
+            "what can you do",
+            "your capabilities",
+            "what do you do",
+            "how can you help",
+            "what are your skills",
         ],
         "response": (
             "Here is what I can help with:\n"
@@ -73,21 +77,25 @@ TEMPLATES = [
             "- Answer software engineering questions\n"
             "- Suggest architecture and design improvements\n"
             "Just ask and I will get to work!"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "are you online", "are you there", "are you active",
-            "is mo-assistant online", "mo-assistant status"
+            "are you online",
+            "are you there",
+            "are you active",
+            "is mo-assistant online",
+            "mo-assistant status",
         ],
-        "response": "Mo-Assistant is online and ready to collaborate!"
+        "response": "Mo-Assistant is online and ready to collaborate!",
     },
-
     {
         "keywords": [
-            "how do you work", "how are you built", "what model are you",
-            "which ai are you", "what powers you"
+            "how do you work",
+            "how are you built",
+            "what model are you",
+            "which ai are you",
+            "what powers you",
         ],
         "response": (
             "I am built with Python and the Anthropic Claude API (Haiku model). "
@@ -95,35 +103,18 @@ TEMPLATES = [
             "use pre-written templates for common questions (saves tokens), "
             "and fall back to Claude AI for complex answers. "
             "I can also write real Python files directly to a workspace folder."
-        )
+        ),
     },
-
-    # ════════════════════════════════════════════════════════
-    # CATEGORY 2: HELLO WORLD
-    # ════════════════════════════════════════════════════════
-
-    {
-        "keywords": [
-            "hello world", "helloworld", "first program",
-            "simplest program", "basic program"
-        ],
-        "response": (
-            "Here is a Python hello world:\n\n"
-            "```python\n"
-            "print('Hello, World!')\n"
-            "```\n\n"
-            "Run it with: `python hello.py`"
-        )
-    },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 3: STRING OPERATIONS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "reverse a string", "reverse string", "flip a string",
-            "string reverse", "backwards string"
+            "reverse a string",
+            "reverse string",
+            "flip a string",
+            "string reverse",
+            "backwards string",
         ],
         "response": (
             "Here are two ways to reverse a string in Python:\n\n"
@@ -136,13 +127,15 @@ TEMPLATES = [
             "    return ''.join(reversed(s))\n\n"
             "print(reverse_string('hello'))  # Output: olleh\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "count words", "word count", "count characters",
-            "string length", "len of string"
+            "count words",
+            "word count",
+            "count characters",
+            "string length",
+            "len of string",
         ],
         "response": (
             "Counting in Python strings:\n\n"
@@ -155,13 +148,16 @@ TEMPLATES = [
             "# Count a specific character\n"
             "print(text.count('l'))    # 3\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "uppercase", "lowercase", "upper case", "lower case",
-            "capitalize string", "string case"
+            "uppercase",
+            "lowercase",
+            "upper case",
+            "lower case",
+            "capitalize string",
+            "string case",
         ],
         "response": (
             "String case operations in Python:\n\n"
@@ -173,17 +169,18 @@ TEMPLATES = [
             "print(text.title())      # Hello World\n"
             "print(text.swapcase())   # hELLO wORLD\n"
             "```"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 4: LIST OPERATIONS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "sort a list", "sort list", "order a list",
-            "sort array", "sorted list"
+            "sort a list",
+            "sort list",
+            "order a list",
+            "sort array",
+            "sorted list",
         ],
         "response": (
             "Sorting lists in Python:\n\n"
@@ -201,13 +198,15 @@ TEMPLATES = [
             "names = ['Charlie', 'Alice', 'Bob']\n"
             "names.sort()  # ['Alice', 'Bob', 'Charlie']\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "remove duplicates", "unique list", "remove duplicate",
-            "list without duplicates", "distinct values"
+            "remove duplicates",
+            "unique list",
+            "remove duplicate",
+            "list without duplicates",
+            "distinct values",
         ],
         "response": (
             "Remove duplicates from a list in Python:\n\n"
@@ -219,13 +218,15 @@ TEMPLATES = [
             "unique = list(dict.fromkeys(numbers))\n\n"
             "print(unique)  # [1, 2, 3, 4]\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "flatten list", "nested list", "list of lists",
-            "flatten nested", "2d list to 1d"
+            "flatten list",
+            "nested list",
+            "list of lists",
+            "flatten nested",
+            "2d list to 1d",
         ],
         "response": (
             "Flatten a nested list in Python:\n\n"
@@ -238,17 +239,18 @@ TEMPLATES = [
             "flat = list(itertools.chain.from_iterable(nested))\n\n"
             "print(flat)  # [1, 2, 3, 4, 5, 6]\n"
             "```"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 5: DICTIONARY OPERATIONS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "what is a dictionary", "how to use dictionary",
-            "python dict", "key value", "create dict"
+            "what is a dictionary",
+            "how to use dictionary",
+            "python dict",
+            "key value",
+            "create dict",
         ],
         "response": (
             "Python dictionaries store key-value pairs:\n\n"
@@ -269,13 +271,15 @@ TEMPLATES = [
             "if 'name' in person:\n"
             "    print('Name found!')\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "merge dictionaries", "combine dicts", "merge dicts",
-            "join dictionaries", "merge two dict"
+            "merge dictionaries",
+            "combine dicts",
+            "merge dicts",
+            "join dictionaries",
+            "merge two dict",
         ],
         "response": (
             "Merge dictionaries in Python:\n\n"
@@ -288,17 +292,19 @@ TEMPLATES = [
             "merged = {**dict1, **dict2}\n\n"
             "print(merged)  # {'a': 1, 'b': 2, 'c': 3, 'd': 4}\n"
             "```"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 6: FILE OPERATIONS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "read a file", "read file", "open file", "load file",
-            "read text file", "file reading"
+            "read a file",
+            "read file",
+            "open file",
+            "load file",
+            "read text file",
+            "file reading",
         ],
         "response": (
             "Reading files in Python:\n\n"
@@ -319,13 +325,16 @@ TEMPLATES = [
             "    data = json.load(f)\n"
             "```\n\n"
             "Always use `with open(...)` -- it closes the file automatically."
-        )
+        ),
     },
-
     {
         "keywords": [
-            "write a file", "write file", "save file",
-            "write to file", "create file", "save to file"
+            "write a file",
+            "write file",
+            "save file",
+            "write to file",
+            "create file",
+            "save to file",
         ],
         "response": (
             "Writing files in Python:\n\n"
@@ -346,17 +355,19 @@ TEMPLATES = [
             "with open('data.json', 'w') as f:\n"
             "    json.dump(data, f, indent=2)\n"
             "```"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 7: ERROR HANDLING
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "try except", "error handling", "exception handling",
-            "catch error", "handle exception", "try catch"
+            "try except",
+            "error handling",
+            "exception handling",
+            "catch error",
+            "handle exception",
+            "try catch",
         ],
         "response": (
             "Error handling in Python:\n\n"
@@ -383,17 +394,18 @@ TEMPLATES = [
             "finally:\n"
             "    print('Done.')              # always runs\n"
             "```"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 8: FUNCTIONS & CLASSES
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "what is a function", "how to write a function",
-            "define a function", "create function", "python function"
+            "what is a function",
+            "how to write a function",
+            "define a function",
+            "create function",
+            "python function",
         ],
         "response": (
             "Functions in Python:\n\n"
@@ -410,13 +422,16 @@ TEMPLATES = [
             "    return min(numbers), max(numbers)\n\n"
             "low, high = min_max([3, 1, 4, 1, 5])\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "what is a class", "how to write a class",
-            "define a class", "create class", "python class", "oop"
+            "what is a class",
+            "how to write a class",
+            "define a class",
+            "create class",
+            "python class",
+            "oop",
         ],
         "response": (
             "Classes in Python (Object-Oriented Programming):\n\n"
@@ -436,17 +451,17 @@ TEMPLATES = [
             "print(dog1.bark())  # Rex says: Woof!\n"
             "print(dog2.name)    # Buddy\n"
             "```"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 9: LOOPS & COMPREHENSIONS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "list comprehension", "list comp",
-            "one line list", "compact list"
+            "list comprehension",
+            "list comp",
+            "one line list",
+            "compact list",
         ],
         "response": (
             "List comprehensions -- a compact way to build lists:\n\n"
@@ -466,13 +481,15 @@ TEMPLATES = [
             "squared = {x: x**2 for x in range(5)}\n"
             "# {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "enumerate", "loop with index", "index in loop",
-            "for loop index", "numbered loop"
+            "enumerate",
+            "loop with index",
+            "index in loop",
+            "for loop index",
+            "numbered loop",
         ],
         "response": (
             "Loop with index using enumerate:\n\n"
@@ -491,17 +508,20 @@ TEMPLATES = [
             "# 2. Bob\n"
             "# 3. Charlie\n"
             "```"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 10: API REQUESTS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "how to call an api", "api request", "requests library",
-            "http request", "get request", "post request", "rest api"
+            "how to call an api",
+            "api request",
+            "requests library",
+            "http request",
+            "get request",
+            "post request",
+            "rest api",
         ],
         "response": (
             "Making API requests in Python using the `requests` library:\n\n"
@@ -522,17 +542,18 @@ TEMPLATES = [
             "response = requests.get('https://api.example.com/secure', headers=headers)\n"
             "```\n\n"
             "Install with: `pip install requests`"
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 11: ALGORITHMS
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "fibonacci", "fibonacci sequence", "fibonacci number",
-            "fib sequence", "fibonacci series"
+            "fibonacci",
+            "fibonacci sequence",
+            "fibonacci number",
+            "fib sequence",
+            "fibonacci series",
         ],
         "response": (
             "Fibonacci sequence in Python:\n\n"
@@ -552,13 +573,14 @@ TEMPLATES = [
             "    return a\n\n"
             "print(fib(10))  # 55\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "factorial", "factorial function", "n factorial",
-            "calculate factorial"
+            "factorial",
+            "factorial function",
+            "n factorial",
+            "calculate factorial",
         ],
         "response": (
             "Factorial in Python:\n\n"
@@ -578,13 +600,14 @@ TEMPLATES = [
             "import math\n"
             "print(math.factorial(5))  # 120\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "binary search", "search algorithm",
-            "search in list", "find in sorted"
+            "binary search",
+            "search algorithm",
+            "search in list",
+            "find in sorted",
         ],
         "response": (
             "Binary search in Python:\n\n"
@@ -605,13 +628,15 @@ TEMPLATES = [
             "print(binary_search(numbers, 6))   # -1 (not found)\n"
             "```\n\n"
             "Note: the list must be sorted for binary search to work."
-        )
+        ),
     },
-
     {
         "keywords": [
-            "bubble sort", "insertion sort", "selection sort",
-            "sorting algorithm", "implement sort"
+            "bubble sort",
+            "insertion sort",
+            "selection sort",
+            "sorting algorithm",
+            "implement sort",
         ],
         "response": (
             "Common sorting algorithms in Python:\n\n"
@@ -639,17 +664,19 @@ TEMPLATES = [
             "```\n\n"
             "In real projects, always use Python's built-in `sorted()` -- "
             "it uses Timsort and is much faster."
-        )
+        ),
     },
-
     # ════════════════════════════════════════════════════════
     # CATEGORY 12: TERMINAL & ENVIRONMENT
     # ════════════════════════════════════════════════════════
-
     {
         "keywords": [
-            "how to run python", "run a python file", "run python script",
-            "execute python", "python command", "how to execute"
+            "how to run python",
+            "run a python file",
+            "run python script",
+            "execute python",
+            "python command",
+            "how to execute",
         ],
         "response": (
             "How to run a Python file from the terminal:\n\n"
@@ -664,13 +691,16 @@ TEMPLATES = [
             "python --version\n"
             "```\n\n"
             "Make sure you are in the same folder as your file first: `cd your-folder`"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "how to install", "pip install", "install package",
-            "install library", "install module", "how to add package"
+            "how to install",
+            "pip install",
+            "install package",
+            "install library",
+            "install module",
+            "how to add package",
         ],
         "response": (
             "Installing Python packages with pip:\n\n"
@@ -688,13 +718,16 @@ TEMPLATES = [
             "# Save your installed packages to a file\n"
             "pip freeze > requirements.txt\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "virtual environment", "venv", "virtualenv",
-            "create venv", "activate venv", "python environment"
+            "virtual environment",
+            "venv",
+            "virtualenv",
+            "create venv",
+            "activate venv",
+            "python environment",
         ],
         "response": (
             "Virtual environments keep your project dependencies isolated:\n\n"
@@ -712,13 +745,15 @@ TEMPLATES = [
             "deactivate\n"
             "```\n\n"
             "Always activate your venv before running your project."
-        )
+        ),
     },
-
     {
         "keywords": [
-            "check python version", "python version", "which python",
-            "what version", "python --version"
+            "check python version",
+            "python version",
+            "which python",
+            "what version",
+            "python --version",
         ],
         "response": (
             "Check your Python and pip versions:\n\n"
@@ -730,13 +765,14 @@ TEMPLATES = [
             "where python          # Windows\n"
             "which python3         # Mac / Linux\n"
             "```"
-        )
+        ),
     },
-
     {
         "keywords": [
-            "requirements.txt", "requirements file",
-            "how to share dependencies", "project dependencies"
+            "requirements.txt",
+            "requirements file",
+            "how to share dependencies",
+            "project dependencies",
         ],
         "response": (
             "Using requirements.txt to share project dependencies:\n\n"
@@ -752,13 +788,17 @@ TEMPLATES = [
             "python-dotenv==1.0.0\n"
             "```\n\n"
             "Always include this file in your project so others can set up easily."
-        )
+        ),
     },
-
     {
         "keywords": [
-            "environment variable", "env variable", "dotenv",
-            "how to use .env", "load env", "os.getenv", "os.environ"
+            "environment variable",
+            "env variable",
+            "dotenv",
+            "how to use .env",
+            "load env",
+            "os.getenv",
+            "os.environ",
         ],
         "response": (
             "Using environment variables to store secrets safely:\n\n"
@@ -778,13 +818,15 @@ TEMPLATES = [
             "```\n\n"
             "Install with: `pip install python-dotenv`\n\n"
             "IMPORTANT: Always add `.env` to your `.gitignore` -- never commit secrets."
-        )
+        ),
     },
-
     {
         "keywords": [
-            "gitignore", ".gitignore", "what to ignore",
-            "ignore files git", "git ignore"
+            "gitignore",
+            ".gitignore",
+            "what to ignore",
+            "ignore files git",
+            "git ignore",
         ],
         "response": (
             "A `.gitignore` file tells git which files NOT to commit.\n\n"
@@ -807,9 +849,8 @@ TEMPLATES = [
             "*.log\n"
             "```\n\n"
             "Create this file in the root of your project before your first `git commit`."
-        )
+        ),
     },
-
 ]
 
 
@@ -817,6 +858,7 @@ TEMPLATES = [
 # Called from agent.py before every Claude API call.
 # Checks if the message matches any template.
 # Returns the response string if found, or None if no match.
+
 
 def find_template(content):
     """
