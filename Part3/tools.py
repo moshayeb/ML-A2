@@ -67,14 +67,22 @@ def run_command(command):
 def write_file(filename, content):
     """
     Write a code file to the workspace folder.
+    Supports one subfolder level: e.g. "cookbook_app/recipe.py"
     Only allows writing inside the workspace — not anywhere on disk.
     """
-    # Safety: block path tricks like ../../secret.txt that could
-    # escape the workspace and write to sensitive parts of the disk.
-    if "/" in filename or "\\" in filename or ".." in filename:
+    # Block path traversal tricks like ../../secret.txt
+    if ".." in filename or "\\" in filename:
         return f"[BLOCKED] Invalid filename: {filename}"
 
-    filepath = os.path.join(WORKSPACE, filename)
+    # Allow exactly one subfolder level (e.g. "project/file.py")
+    parts = filename.replace("\\", "/").split("/")
+    if len(parts) > 2:
+        return f"[BLOCKED] Only one subfolder level allowed: {filename}"
+
+    filepath = os.path.join(WORKSPACE, *parts)
+
+    # Create the subfolder if it doesn't exist
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
     with open(filepath, "w") as f:
         f.write(content)

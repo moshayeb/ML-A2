@@ -5,7 +5,7 @@
     "rate_limit_seconds": 5,
     "response_delay_seconds": 5,
     "context_messages": 15,
-    "test_mode": true,
+    "test_mode": false,
     "agent_name": "Mo-Alshayeb-Agent",
     "coordination_enabled": true,
     "hub": "https://z0yncxbipft4e8-8080.proxy.runpod.net",
@@ -29,7 +29,8 @@
 
         "═══ CODE OUTPUT FORMAT ═══",
         "When asked to write or create a file, reply with ONLY this JSON:",
-        "{\"type\": \"file\", \"filename\": \"example.py\", \"content\": \"# complete code here\"}",
+        "{\"type\": \"file\", \"filename\": \"project_name/example.py\", \"content\": \"# complete code here\"}",
+        "Always put the file inside a project subfolder that matches the project name (e.g. cookbook_app/recipe.py, calculator/calc.py).",
         "Never use placeholders. Always write complete, runnable code.\n",
 
         "═══ COLLABORATION RULES ═══",

@@ -23,7 +23,7 @@ import time
 import threading
 
 import state
-from config_loader import AGENT_NAME, settings
+from config_loader import AGENT_NAME, TEST_MODE, settings
 from hub           import post_message, get_messages
 from history       import save_message, HISTORY_FILE, save_last_seq, load_last_seq
 from agent         import handle_message
@@ -49,7 +49,8 @@ def run():
             if state.last_seq > hub_max:
                 print(f"[START] Hub was reset (our seq {state.last_seq} > hub max {hub_max}). Starting fresh.")
                 state.last_seq = 0
-                save_last_seq(0)
+                if not TEST_MODE:
+                    save_last_seq(0)
     except Exception:
         pass
 
@@ -64,7 +65,8 @@ def run():
 
             for message in new_messages:
                 state.last_seq = message["seq"]
-                save_last_seq(state.last_seq)
+                if not TEST_MODE:
+                    save_last_seq(state.last_seq)
 
                 current_time = time.time()
                 if current_time - state.last_message_time < settings["rate_limit_seconds"]:
