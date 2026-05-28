@@ -27,7 +27,7 @@ from history       import load_all_history, HISTORY_FILE
 # --- CONSOLE CONTROL ----------------------------------------
 
 def console_control():
-    print("[CONSOLE] Control active. Commands: budget <n>, rate <n>, status, history, stop")
+    print("[CONSOLE] Control active. Commands: budget <n>, rate <n>, status, history, stop/quit/q")
 
     while state.agent_running:
         try:
@@ -50,13 +50,13 @@ def console_control():
                 all_msgs = load_all_history()
                 print(f"[CONSOLE] {len(all_msgs)} messages saved in {HISTORY_FILE}")
 
-            elif cmd == "stop":
+            elif cmd in ("stop", "quit", "exit", "q"):
                 print("[CONSOLE] Stopping agent...")
                 state.agent_running = False
                 break
 
             else:
-                print("[CONSOLE] Unknown command. Try: budget <n>, rate <n>, status, history, stop")
+                print("[CONSOLE] Unknown command. Try: budget <n>, rate <n>, status, history, stop/quit/q")
 
         except Exception as e:
             print(f"[CONSOLE] Error: {e}")

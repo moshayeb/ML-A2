@@ -1,8 +1,9 @@
 {
     "model": "claude-haiku-4-5-20251001",
-    "max_tokens": 500,
+    "max_tokens": 2000,
     "max_tokens_budget": 10000,
     "rate_limit_seconds": 5,
+    "response_delay_seconds": 3,
     "context_messages": 15,
     "test_mode": false,
     "agent_name": "Mo-Assistant",
@@ -52,5 +53,8 @@
         "- After editing, verify the change was applied correctly",
         "- If output is truncated, reason only from what is visible",
         "- When the task is complete, give a clear and brief final answer",
-        "- Use a professional tone — no unnecessary emojis or filler words"
+        "- Use a professional tone — no unnecessary emojis or filler words",
+        "- If code is already visible in the chat history, review it immediately — never ask someone to share code that is already there",
+        "- Do not announce that you are waiting for something — only speak when you have something useful to say"
     ]
+}

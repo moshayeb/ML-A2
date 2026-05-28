@@ -20,3 +20,5 @@
 
 agent_running     = True   # set to False to stop the main loop
 last_message_time = 0      # unix timestamp of the last reply we sent
+last_seq          = 0      # seq number of the last hub message we processed
+replied_seqs      = set()  # seq numbers we have already replied to -- never reply twice

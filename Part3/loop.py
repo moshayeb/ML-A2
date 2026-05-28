@@ -25,7 +25,7 @@ import threading
 import state
 from config_loader import AGENT_NAME, settings
 from hub           import post_message, get_messages
-from history       import save_message, HISTORY_FILE
+from history       import save_message, HISTORY_FILE, save_last_seq, load_last_seq
 from agent         import handle_message
 from console       import console_control
 
@@ -37,18 +37,34 @@ def run():
     control_thread = threading.Thread(target=console_control, daemon=True)
     control_thread.start()
 
+    state.last_seq = load_last_seq()  # resume from where we left off
+
+    # Check if the hub was reset since we last ran.
+    # If our saved seq is higher than the hub's highest message,
+    # the teacher restarted the hub and we need to start from 0.
+    try:
+        hub_messages = get_messages(since=0)
+        if hub_messages:
+            hub_max = max(m["seq"] for m in hub_messages)
+            if state.last_seq > hub_max:
+                print(f"[START] Hub was reset (our seq {state.last_seq} > hub max {hub_max}). Starting fresh.")
+                state.last_seq = 0
+                save_last_seq(0)
+    except Exception:
+        pass
+
     print(f"[START] {AGENT_NAME} is starting up...")
+    print(f"[START] Resuming from message seq: {state.last_seq}")
     print(f"[START] History will be saved to: {HISTORY_FILE}")
     post_message(f"{AGENT_NAME} is online and ready to collaborate!")
 
-    last_seq = 0
-
     while state.agent_running:
         try:
-            new_messages = get_messages(since=last_seq)
+            new_messages = get_messages(since=state.last_seq)
 
             for message in new_messages:
-                last_seq = message["seq"]
+                state.last_seq = message["seq"]
+                save_last_seq(state.last_seq)
 
                 current_time = time.time()
                 if current_time - state.last_message_time < settings["rate_limit_seconds"]:

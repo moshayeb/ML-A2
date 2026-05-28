@@ -32,7 +32,26 @@ from config_loader import settings  # shared settings dictionary
 # logs/ folder is created automatically if it doesn't exist.
 
 HISTORY_FILE = os.path.join("logs", "chat_history.json")
+SEQ_FILE     = os.path.join("logs", "last_seq.json")
 os.makedirs("logs", exist_ok=True)  # create logs/ if not there yet
+
+
+# ─── LAST SEQ PERSISTENCE ───────────────────────────────────
+# Saves and loads the last hub message sequence number so the
+# agent never re-processes old messages after a restart.
+
+def save_last_seq(seq: int):
+    """Write the last seen seq number to disk."""
+    with open(SEQ_FILE, "w") as f:
+        json.dump({"last_seq": seq}, f)
+
+def load_last_seq() -> int:
+    """Read the last seen seq number from disk. Returns 0 if not found."""
+    try:
+        with open(SEQ_FILE, "r") as f:
+            return json.load(f).get("last_seq", 0)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return 0
 
 
 # ─── SAVE MESSAGE ───────────────────────────────────────────

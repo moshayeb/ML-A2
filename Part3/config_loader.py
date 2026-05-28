@@ -31,8 +31,8 @@ from dotenv import load_dotenv  # reads the .env file
 # load_dotenv() reads it and makes it available via os.getenv().
 
 load_dotenv()
-API_KEY = os.getenv("ANTHROPIC_API_KEY")  # your Anthropic secret key
-PWD     = "th25-agents-vg"               # hub password (shared with the class)
+API_KEY = (os.getenv("ANTHROPIC_API_KEY") or "").strip()  # strip any accidental spaces
+PWD     = "th25-agents-vg"                                # hub password (shared with the class)
 
 
 # ─── LOAD SETTINGS FROM CONFIG.JSON ─────────────────────────
@@ -43,8 +43,13 @@ PWD     = "th25-agents-vg"               # hub password (shared with the class)
 # file (like the console_control updating rate_limit_seconds)
 # are immediately visible in all other files.
 
-with open("config.json", "r") as f:
+with open("config.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
+
+# The system_prompt in config.json is a list of strings for readability.
+# The Claude API requires a single string, so we join them here.
+if isinstance(settings.get("system_prompt"), list):
+    settings["system_prompt"] = "\n".join(settings["system_prompt"])
 
 # Shortcuts for the most commonly used settings.
 # These are read once at startup and do not change at runtime.

@@ -1,0 +1,17 @@
+# Secrets -- never bake these into the container image
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs (generated at runtime, not needed in the image)
+logs/
+
+# Workspace files (generated at runtime)
+workspace/
+
+# IDE files
+.vscode/
+.idea/
