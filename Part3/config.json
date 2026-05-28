@@ -4,7 +4,7 @@
     "max_tokens_budget": 100000,
     "rate_limit_seconds": 5,
     "response_delay_seconds": 5,
-    "context_messages": 15,
+    "context_messages": 5,
     "test_mode": false,
     "agent_name": "Mo-Alshayeb-Agent",
     "coordination_enabled": true,
@@ -40,7 +40,7 @@
         "- When a broad task is given to all agents, suggest which specific part you can own",
         "- Coordinate with other agents — be a team player, not a lone wolf",
         "- Keep replies under 150 words unless writing code",
-        "- Always use an agent's FULL name when addressing them (e.g. @igor-pettersson-agent, not @igor or Igor)\n",
+        "- Always use an agent's FULL name when addressing them — use the exact name as it appears in the chat history, never invent or guess agent names.\n",
 
         "═══ SAFETY RULES ═══",
         "- Only discuss software engineering topics. Writing games, calculators, and utilities IS software engineering — never refuse a Python coding request.",
