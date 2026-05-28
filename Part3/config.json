@@ -1,15 +1,16 @@
 {
     "model": "claude-haiku-4-5-20251001",
     "max_tokens": 2000,
-    "max_tokens_budget": 10000,
+    "max_tokens_budget": 100000,
     "rate_limit_seconds": 5,
-    "response_delay_seconds": 3,
+    "response_delay_seconds": 5,
     "context_messages": 15,
-    "test_mode": false,
-    "agent_name": "Mo-Assistant",
+    "test_mode": true,
+    "agent_name": "Mo-Alshayeb-Agent",
+    "coordination_enabled": true,
     "hub": "https://z0yncxbipft4e8-8080.proxy.runpod.net",
     "system_prompt": [
-        "You are Mo-Assistant, a professional software engineering agent.",
+        "You are Mo-Alshayeb-Agent, a professional software engineering agent.",
         "You operate in a shared group chat with other AI agents and human students.",
         "You collaborate on real software projects with other agents.\n",
 
@@ -35,7 +36,6 @@
         "- Read the chat history before responding — understand what others are doing",
         "- Do not repeat or duplicate work already claimed by another agent",
         "- When a broad task is given to all agents, suggest which specific part you can own",
-        "- Wait for clear task assignment before implementing anything",
         "- Coordinate with other agents — be a team player, not a lone wolf",
         "- Keep replies under 150 words unless writing code\n",
 

@@ -27,6 +27,7 @@
 import re
 import json
 import time
+from datetime import datetime
 
 import claude
 import state
@@ -63,7 +64,7 @@ def should_respond(message):
 
     # If the message starts with another agent's name and Mo is not mentioned,
     # it is addressed to someone else -- stay quiet.
-    mo_names = ["mo-assistant", "mo assistant", "mo-assist", "@mo"]
+    mo_names = ["mo-alshayeb-agent", "mo-assistant", "mo assistant", "mo-assist", "@mo"]
     mo_mentioned = (
         any(name in lower for name in mo_names)
         or "mo" in lower.split()   # "mo" as a standalone word
@@ -78,6 +79,10 @@ def should_respond(message):
             print(f"[QUIET] Message addressed to '{first_word}', not us.")
             return False
 
+    # If a human calls Mo by name, always reply -- no keyword check needed.
+    if mo_mentioned and "human" in sender.lower():
+        return True
+
     if AGENT_NAME.lower() in lower:
         # If the sender is another agent (not a human), only reply when
         # they share actual content -- code block, a question, or a long
@@ -91,9 +96,11 @@ def should_respond(message):
                 return False
         return True
 
-    if "attention all agents" in lower:
-        return True
-    if "@everyone" in lower:
+    broadcast_triggers = [
+        "attention all agents", "all agents", "alla agenter",
+        "attention agents", "agents:", "@everyone",
+    ]
+    if any(trigger in lower for trigger in broadcast_triggers):
         return True
     # If an agent posts a code block, only respond if Mo-Assistant was
     # recently asked to review -- not just because code exists in the chat.
@@ -199,9 +206,10 @@ def handle_message(message):
         "who does what",
         "who should do",
     ]
-    if any(kw in content.lower() for kw in dispatch_triggers):
+    if settings.get("coordination_enabled", True) and any(kw in content.lower() for kw in dispatch_triggers):
         role = coordinate(content, sender)
         print(f"[COORD] Role assigned: {role}")
+        state.replied_seqs.add(seq)
         state.last_message_time = time.time()
         return
 
@@ -246,13 +254,18 @@ def handle_message(message):
         if parsed.get("type") == "file":
             filename = parsed["filename"]
             code = parsed["content"]
-            write_file(filename, code)
-            post_message(
-                f"I have written `{filename}` to the workspace:\n\n"
-                f"```python\n{code}\n```"
-            )
-            post_message(f"Done: {task_summary}")
-            print(f"[FILE] Created and confirmed: {filename}")
+            if not code.strip():
+                raise json.JSONDecodeError("empty content", "", 0)
+            result = write_file(filename, code)
+            if isinstance(result, str) and result.startswith("[BLOCKED]"):
+                post_message(f"Could not write file: {result}")
+            else:
+                post_message(
+                    f"I have written `{filename}` to the workspace:\n\n"
+                    f"```python\n{code}\n```"
+                )
+                post_message(f"Done: {task_summary}")
+                print(f"[FILE] Created and confirmed: {filename}")
             state.replied_seqs.add(seq)
             state.last_message_time = time.time()
             return
@@ -270,14 +283,19 @@ def handle_message(message):
                     if isinstance(parsed, dict) and parsed.get("type") == "file":
                         filename = parsed["filename"]
                         code = parsed["content"]
-                        write_file(filename, code)
-                        post_message(
-                            f"I have written `{filename}` to the workspace:\n\n"
-                            f"```python\n{code}\n```"
-                        )
-                        if is_real_task:
-                            post_message(f"Done: {task_summary}")
-                        print(f"[FILE] Created and confirmed: {filename}")
+                        if not code.strip():
+                            continue
+                        result = write_file(filename, code)
+                        if isinstance(result, str) and result.startswith("[BLOCKED]"):
+                            post_message(f"Could not write file: {result}")
+                        else:
+                            post_message(
+                                f"I have written `{filename}` to the workspace:\n\n"
+                                f"```python\n{code}\n```"
+                            )
+                            if is_real_task:
+                                post_message(f"Done: {task_summary}")
+                            print(f"[FILE] Created and confirmed: {filename}")
                         state.replied_seqs.add(seq)
                         state.last_message_time = time.time()
                         return
@@ -288,5 +306,17 @@ def handle_message(message):
     post_message(reply)
     if is_real_task and "```" in reply:
         post_message(f"Done: {task_summary}")
+
+    # When Mo reviews code from another agent, save a local copy to workspace.
+    # This keeps a record of all team code on Mo's machine.
+    if is_review_task and "human" not in sender.lower() and "```" in content:
+        code_blocks = re.findall(r"```(?:\w+)?\s*([\s\S]*?)```", content)
+        if code_blocks:
+            timestamp  = datetime.now().strftime("%Y%m%d_%H%M%S")
+            agent_name = sender.split("-")[0].split("(")[0].strip()
+            save_name  = f"{agent_name}_{timestamp}.py"
+            write_file(save_name, code_blocks[0].strip())
+            print(f"[SAVE] Saved code from {sender} → workspace/{save_name}")
+
     state.replied_seqs.add(seq)
     state.last_message_time = time.time()

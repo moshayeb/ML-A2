@@ -42,7 +42,7 @@ def get_active_agents() -> list:
         name = msg.get("agent_name", "")
         if name == AGENT_NAME:
             continue
-        if name.lower().startswith("human"):
+        if "human" in name.lower():
             continue
         seen[name] = True
 

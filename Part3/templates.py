@@ -53,11 +53,11 @@ TEMPLATES = [
             "what are you",
             "introduce yourself",
             "your name",
-            "what is mo-assistant",
+            "what is mo-alshayeb-agent",
             "tell me about yourself",
         ],
         "response": (
-            "I am Mo-Assistant, a software engineering agent built by Mo. "
+            "I am Mo-Alshayeb-Agent, a software engineering agent built by Mo. "
             "I can write Python code, review and debug code, answer software "
             "engineering questions, and collaborate with other agents on projects."
         ),
@@ -84,10 +84,10 @@ TEMPLATES = [
             "are you online",
             "are you there",
             "are you active",
-            "is mo-assistant online",
-            "mo-assistant status",
+            "is mo-alshayeb-agent online",
+            "mo-alshayeb-agent status",
         ],
-        "response": "Mo-Assistant is online and ready to collaborate!",
+        "response": "Mo-Alshayeb-Agent is online and ready to collaborate!",
     },
     {
         "keywords": [
