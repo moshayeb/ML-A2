@@ -42,6 +42,8 @@ def run():
     # Check if the hub was reset since we last ran.
     # If our saved seq is higher than the hub's highest message,
     # the teacher restarted the hub and we need to start from 0.
+    # Also reset if the hub is completely empty — it was wiped and
+    # our saved seq would cause us to miss all new messages.
     try:
         hub_messages = get_messages(since=0)
         if hub_messages:
@@ -51,6 +53,11 @@ def run():
                 state.last_seq = 0
                 if not TEST_MODE:
                     save_last_seq(0)
+        elif state.last_seq > 0:
+            print(f"[START] Hub is empty but saved seq is {state.last_seq}. Hub was reset. Starting fresh.")
+            state.last_seq = 0
+            if not TEST_MODE:
+                save_last_seq(0)
     except Exception:
         pass
 
@@ -81,7 +88,10 @@ def run():
 
         except KeyboardInterrupt:
             print(f"\n[STOP] {AGENT_NAME} shutting down...")
-            post_message(f"{AGENT_NAME} is going offline. Goodbye!")
+            try:
+                post_message(f"{AGENT_NAME} is going offline. Goodbye!")
+            except Exception:
+                pass
             state.agent_running = False
             break
 

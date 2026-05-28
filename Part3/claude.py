@@ -43,16 +43,23 @@ tokens_spent = 0
 # first — just like a human would scroll up before replying.
 
 
-def ask_claude(current_message, sender):
+def ask_claude(current_message, sender, template_context=None):
     """
     Send a message to Claude with recent chat history as context.
 
-    current_message : the new message we need to reply to
-    sender          : who sent it (e.g. "human:Teacher")
+    current_message  : the new message we need to reply to
+    sender           : who sent it (e.g. "human:Teacher")
+    template_context : optional reference material from templates.py
 
     Returns Claude's reply as a string.
     """
     context = get_recent_context()
+
+    # If a template matched, inject it as reference material so Claude
+    # can use it to write a natural, context-aware answer.
+    reference = ""
+    if template_context:
+        reference = f"\nRelevant reference material (use this to inform your reply):\n{template_context}\n"
 
     # We combine recent chat history + the new message into one prompt.
     messages = [
@@ -60,7 +67,8 @@ def ask_claude(current_message, sender):
             "role": "user",
             "content": (
                 f"Here is the recent group chat history:\n\n"
-                f"{context}\n\n"
+                f"{context}\n"
+                f"{reference}\n"
                 f"The latest message is from {sender}:\n"
                 f'"{current_message}"\n\n'
                 f"Reply as {AGENT_NAME}. Be specific and helpful."
@@ -118,5 +126,11 @@ def check_budget():
 def update_tokens(input_tokens, output_tokens):
     """Add tokens used by one Claude call to the running total."""
     global tokens_spent
+    budget = settings["max_tokens_budget"]
     tokens_spent += input_tokens + output_tokens
-    print(f"[TOKENS] Spent so far: {tokens_spent}/{settings['max_tokens_budget']}")
+    pct = (tokens_spent / budget) * 100
+    print(f"[TOKENS] Spent so far: {tokens_spent}/{budget} ({pct:.1f}%)")
+    if pct >= 90:
+        print(f"[BUDGET] WARNING: Token budget is {pct:.1f}% used ({tokens_spent}/{budget}). Approaching limit!")
+    elif pct >= 70:
+        print(f"[BUDGET] NOTICE: Token budget is {pct:.1f}% used ({tokens_spent}/{budget}).")

@@ -35,7 +35,6 @@ from config_loader import AGENT_NAME, settings
 from hub import post_message, get_messages
 from history import save_message
 from tools import write_file
-from templates import find_template
 from coordination import coordinate
 
 
@@ -184,18 +183,6 @@ def handle_message(message):
         print("[QUIET] Budget exhausted.")
         return
 
-    # Check templates BEFORE calling Claude -- but only for human messages.
-    # When an agent posts code, we should review it, not fire a template.
-    # A template firing on agent code causes repeated identical replies.
-    if "human" in sender.lower():
-        template_reply = find_template(content)
-        if template_reply:
-            print("[TEMPLATE] Using pre-written response -- no tokens spent.")
-            post_message(template_reply)
-            state.replied_seqs.add(seq)
-            state.last_message_time = time.time()
-            return
-
     # Only coordinate roles when explicitly asked.
     # Keywords that trigger dispatch: "dispatch", "assign roles", "coordinate", etc.
     dispatch_triggers = [
@@ -301,6 +288,32 @@ def handle_message(message):
                         return
                 except json.JSONDecodeError:
                     continue
+
+    # Fallback: Claude returned a code block as plain text instead of JSON.
+    # Extract the code and write it as a file so the work isn't lost.
+    if "```python" in reply:
+        code_match = re.search(r"```python\s*([\s\S]+?)```", reply)
+        if code_match:
+            code = code_match.group(1).strip()
+            # Look for a .py filename anywhere in the message or reply
+            fname_match = re.search(r'\b([\w/]+\.py)\b', content + " " + reply)
+            if fname_match:
+                filename = fname_match.group(1)
+            else:
+                words = re.sub(r'[^\w\s]', '', content.lower()).split()[:3]
+                filename = "_".join(words) + ".py" if words else "script.py"
+            result = write_file(filename, code)
+            if isinstance(result, str) and result.startswith("[BLOCKED]"):
+                post_message(f"Could not write file: {result}")
+            else:
+                post_message(
+                    f"I have written `{filename}` to the workspace:\n\n"
+                    f"```python\n{code}\n```"
+                )
+            print(f"[FILE] Fallback extraction: {filename}")
+            state.replied_seqs.add(seq)
+            state.last_message_time = time.time()
+            return
 
     print(f"[REPLY] Sending: {reply[:80]}")
     post_message(reply)
