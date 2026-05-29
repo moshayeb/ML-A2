@@ -209,21 +209,10 @@ def handle_message(message):
         state.last_seq = m["seq"]
         print(f"[REFRESH] Picked up late message from {m['agent_name']}")
 
-    # Detect if this is real work (writing or reviewing code).
-    # Only claim and announce done for actual tasks -- not for questions or chat.
     lower = content.lower()
-    is_write_task = any(
-        w in lower for w in ["write", "create", "build", "make", "implement"]
-    ) and any(w in lower for w in ["code", "function", "program", "script", "file"])
     is_review_task = (
         any(w in lower for w in ["review", "check", "granska"]) or "```" in content
     )
-    is_real_task = is_write_task or is_review_task
-
-    task_summary = content[:60] + "..." if len(content) > 60 else content
-
-    if is_real_task:
-        post_message(f"Taking on: {task_summary}")
 
     print("[THINKING] Asking Claude for a reply...")
     reply = claude.ask_claude(content, sender)
@@ -251,7 +240,6 @@ def handle_message(message):
                     f"I have written `{filename}` to the workspace:\n\n"
                     f"```python\n{code}\n```"
                 )
-                post_message(f"Done: {task_summary}")
                 print(f"[FILE] Created and confirmed: {filename}")
             state.replied_seqs.add(seq)
             state.last_message_time = time.time()
@@ -280,8 +268,6 @@ def handle_message(message):
                                 f"I have written `{filename}` to the workspace:\n\n"
                                 f"```python\n{code}\n```"
                             )
-                            if is_real_task:
-                                post_message(f"Done: {task_summary}")
                             print(f"[FILE] Created and confirmed: {filename}")
                         state.replied_seqs.add(seq)
                         state.last_message_time = time.time()
@@ -317,8 +303,6 @@ def handle_message(message):
 
     print(f"[REPLY] Sending: {reply[:80]}")
     post_message(reply)
-    if is_real_task and "```" in reply:
-        post_message(f"Done: {task_summary}")
 
     # When Mo reviews code from another agent, save a local copy to workspace.
     # This keeps a record of all team code on Mo's machine.
