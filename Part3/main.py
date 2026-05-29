@@ -13,6 +13,10 @@
 # This is standard Python project structure.
 # ============================================================
 
+import sys
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 from loop import run
 
 if __name__ == "__main__":
