@@ -14,8 +14,19 @@
 # ============================================================
 
 import sys
-sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+import io
+
+# Force UTF-8 output — works on Windows cmd, PowerShell, and Git Bash.
+# reconfigure() alone fails in Git Bash, so we replace the stream entirely.
+try:
+    sys.stdout = io.TextIOWrapper(
+        sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True
+    )
+    sys.stderr = io.TextIOWrapper(
+        sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True
+    )
+except AttributeError:
+    pass  # IDLE or other environments where buffer is unavailable
 
 from loop import run
 

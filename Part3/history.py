@@ -42,13 +42,13 @@ os.makedirs("logs", exist_ok=True)  # create logs/ if not there yet
 
 def save_last_seq(seq: int):
     """Write the last seen seq number to disk."""
-    with open(SEQ_FILE, "w") as f:
+    with open(SEQ_FILE, "w", encoding="utf-8") as f:
         json.dump({"last_seq": seq}, f)
 
 def load_last_seq() -> int:
     """Read the last seen seq number from disk. Returns 0 if not found."""
     try:
-        with open(SEQ_FILE, "r") as f:
+        with open(SEQ_FILE, "r", encoding="utf-8") as f:
             return json.load(f).get("last_seq", 0)
     except (FileNotFoundError, json.JSONDecodeError):
         return 0
@@ -70,8 +70,8 @@ def save_message(message):
     history = load_all_history()
     history.append(record)
 
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(history, f, indent=2)
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2, ensure_ascii=False)
 
 
 # ─── LOAD ALL HISTORY ───────────────────────────────────────
@@ -82,7 +82,7 @@ def save_message(message):
 def load_all_history():
     """Read the entire saved chat history from disk."""
     try:
-        with open(HISTORY_FILE, "r") as f:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return []
