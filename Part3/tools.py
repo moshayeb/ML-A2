@@ -84,7 +84,7 @@ def write_file(filename, content):
     # Create the subfolder if it doesn't exist
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
-    with open(filepath, "w") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
 
     print(f"[FILE] Created: {filepath}")
@@ -109,7 +109,7 @@ def read_file(filename):
     filepath = os.path.join(WORKSPACE, filename)
 
     try:
-        with open(filepath, "r") as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
 
         if len(content) > MAX_OUTPUT:

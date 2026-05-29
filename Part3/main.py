@@ -16,17 +16,23 @@
 import sys
 import io
 
-# Force UTF-8 output — works on Windows cmd, PowerShell, and Git Bash.
-# reconfigure() alone fails in Git Bash, so we replace the stream entirely.
+# Force UTF-8 output on Windows (cmd, PowerShell, Git Bash/mintty).
+# Without this, Claude replies with emoji or checkmarks crash with charmap.
 try:
-    sys.stdout = io.TextIOWrapper(
-        sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True
-    )
-    sys.stderr = io.TextIOWrapper(
-        sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True
-    )
-except AttributeError:
-    pass  # IDLE or other environments where buffer is unavailable
+    if hasattr(sys.stdout, 'buffer'):
+        # Standard case — works on cmd, PowerShell, most terminals
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True
+        )
+        sys.stderr = io.TextIOWrapper(
+            sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True
+        )
+    else:
+        # Git Bash / mintty — no .buffer, use reconfigure instead
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
 
 from loop import run
 
