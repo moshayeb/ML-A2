@@ -305,13 +305,18 @@ def handle_message(message):
     post_message(reply)
 
     # When Mo reviews code from another agent, save a local copy to workspace.
-    # This keeps a record of all team code on Mo's machine.
+    # Try to use the real filename the agent mentioned (e.g. `notes_app/storage.py`).
+    # Fall back to agent_name/timestamp.py if no filename is found.
     if is_review_task and "human" not in sender.lower() and "```" in content:
         code_blocks = re.findall(r"```(?:\w+)?\s*([\s\S]*?)```", content)
         if code_blocks:
-            timestamp  = datetime.now().strftime("%Y%m%d_%H%M%S")
-            agent_name = sender.split("-")[0].split("(")[0].strip()
-            save_name  = f"{agent_name}_{timestamp}.py"
+            fname_match = re.search(r'`([\w/]+\.py)`', content)
+            if fname_match:
+                save_name = fname_match.group(1)  # e.g. "notes_app/storage.py"
+            else:
+                agent_short = re.sub(r'[^a-z0-9]', '_', sender.split("(")[0].strip().lower())
+                timestamp   = datetime.now().strftime("%Y%m%d_%H%M%S")
+                save_name   = f"{agent_short}/{timestamp}.py"
             write_file(save_name, code_blocks[0].strip())
             print(f"[SAVE] Saved code from {sender} → workspace/{save_name}")
 
