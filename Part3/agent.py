@@ -61,13 +61,41 @@ def should_respond(message):
     if sender == AGENT_NAME:
         return False
 
-    # If the message starts with another agent's name and Mo is not mentioned,
-    # it is addressed to someone else -- stay quiet.
+    # Detect human broadcast pause/resume commands.
+    # Pause sets state.paused=True for ALL subsequent messages until a human resumes.
+    # Direct calls to Mo by name while paused are still honored so the human
+    # can always break through the pause with an explicit task.
     mo_names = ["mo-alshayeb-agent", "mo-assistant", "mo assistant", "mo-assist", "@mo"]
     mo_mentioned = (
         any(name in lower for name in mo_names)
-        or "mo" in lower.split()   # "mo" as a standalone word
+        or "mo" in lower.split()
     )
+
+    if "human" in sender.lower():
+        pause_triggers = [
+            "pause now", "pause all", "all agents pause", "agents: pause",
+            "stop posting", "go silent", "shut up", "freeze", "be quiet",
+        ]
+        resume_triggers = [
+            "resume", "unpause", "start work", "go ahead",
+            "you may speak", "lift the pause",
+        ]
+        if any(t in lower for t in pause_triggers) and not mo_mentioned:
+            print("[PAUSE] Human issued pause. Going silent until explicitly resumed.")
+            state.paused = True
+            return False
+        if any(t in lower for t in resume_triggers):
+            if state.paused:
+                print("[UNPAUSE] Human lifted the pause. Resuming.")
+            state.paused = False
+
+    # Honor an active pause -- silence means no acknowledgment either.
+    if state.paused:
+        print("[PAUSE] Currently paused by human. Staying silent.")
+        return False
+
+    # If the message starts with another agent's name and Mo is not mentioned,
+    # it is addressed to someone else -- stay quiet.
     words = lower.split()
     if words:
         first_word = words[0].rstrip(",.!?:")
