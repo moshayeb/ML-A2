@@ -67,17 +67,17 @@ def run_command(command):
 def write_file(filename, content):
     """
     Write a code file to the workspace folder.
-    Supports up to two subfolder levels: e.g. "snake_game/backend/main.py"
+    Supports up to three subfolder levels: e.g. "react_calculator/src/utils/calculate.js"
     Only allows writing inside the workspace — not anywhere on disk.
     """
     # Block path traversal tricks like ../../secret.txt
     if ".." in filename or "\\" in filename:
         return f"[BLOCKED] Invalid filename: {filename}"
 
-    # Allow up to two subfolder levels (e.g. "project/backend/main.py")
+    # Allow up to three subfolder levels (e.g. "project/src/utils/file.js")
     parts = filename.replace("\\", "/").split("/")
-    if len(parts) > 3:
-        return f"[BLOCKED] Maximum two subfolder levels allowed: {filename}"
+    if len(parts) > 4:
+        return f"[BLOCKED] Maximum three subfolder levels allowed: {filename}"
 
     filepath = os.path.join(WORKSPACE, *parts)
 

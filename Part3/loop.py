@@ -64,7 +64,6 @@ def run():
     print(f"[START] {AGENT_NAME} is starting up...")
     print(f"[START] Resuming from message seq: {state.last_seq}")
     print(f"[START] History will be saved to: {HISTORY_FILE}")
-    post_message(f"{AGENT_NAME} is online and ready to collaborate!")
 
     while state.agent_running:
         try:
@@ -88,10 +87,7 @@ def run():
 
         except KeyboardInterrupt:
             print(f"\n[STOP] {AGENT_NAME} shutting down...")
-            try:
-                post_message(f"{AGENT_NAME} is going offline. Goodbye!")
-            except Exception:
-                pass
+
             state.agent_running = False
             break
 
