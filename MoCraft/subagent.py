@@ -36,7 +36,10 @@ SUBAGENT_SYSTEM_PROMPT = (
     "Never report fake output. Only describe what the tools actually returned. "
     "Never call the same tool with the same arguments twice in a row. "
     "For system queries (disk space, processes, environment info) use run_command "
-    "with appropriate shell commands such as 'df -h', 'ps aux', or 'ls'."
+    "with appropriate shell commands such as 'df -h', 'ps aux', or 'ls'. "
+    "IMPORTANT: At the start of every task, run 'ls' to check what files already "
+    "exist in the workspace. If relevant files exist from a previous task, read "
+    "them with read_file and build on them instead of starting from scratch."
 )
 
 TOOLS = [

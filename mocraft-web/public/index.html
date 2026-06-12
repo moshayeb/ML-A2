@@ -955,16 +955,23 @@
       '<div style="color:var(--muted);font-size:0.8rem;display:flex;align-items:center;gap:8px">' +
       '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 6px var(--blue);animation:pulse 1s infinite"></span>' +
       'Splitting task into subtasks…</div>';
-    document.getElementById('log-body').innerHTML = '';
-    document.getElementById('file-tabs').innerHTML = '';
-    document.getElementById('file-content').innerHTML =
-      '<div class="file-empty"><span class="file-empty-icon">📂</span>Files appear here as agents write them</div>';
+
+    // If there's a previous run, add a separator in the log instead of clearing
+    const logBody = document.getElementById('log-body');
+    if (logBody.children.length > 0) {
+      const sep = document.createElement('div');
+      sep.style.cssText = 'border-top:1px solid var(--border);margin:10px 0;padding-top:8px;color:var(--muted);font-size:0.75rem';
+      sep.textContent = '── Follow-up: ' + description.substring(0, 50) + ' ──';
+      logBody.appendChild(sep);
+    } else {
+      logBody.innerHTML = '';
+    }
+
     document.getElementById('summary-card').classList.remove('visible');
     document.getElementById('workspace-section').classList.remove('visible');
     document.getElementById('progress-section').classList.add('visible');
     document.getElementById('log-status').textContent = 'running…';
     document.getElementById('log-status').style.color = 'var(--blue)';
-    Object.keys(files).forEach(k => delete files[k]);
     agentStatus = {};
     shown5pct = false;
     lastBudgetLevel = 'OK';

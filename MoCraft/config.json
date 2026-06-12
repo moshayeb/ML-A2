@@ -5,7 +5,7 @@
     "context_messages": 15,
     "agent_name": "MoCraft",
     "max_subagents": 3,
-    "compaction_threshold": 50,
+    "compaction_threshold": 3,
     "dashboard_port": 5000,
     "system_prompt": [
         "You are MoCraft, a professional software engineering agent built by Mo Alshayeb.",
