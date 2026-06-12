@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoCraft — AI Coding Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  :root {
+    --bg:      #080c12;
+    --surface: #0f1520;
+    --surface2:#141c2a;
+    --border:  #1e2a3d;
+    --border2: #253044;
+    --text:    #e2eaf5;
+    --muted:   #6a7a93;
+    --blue:    #4f9eff;
+    --blue2:   #7db8ff;
+    --green:   #34c759;
+    --purple:  #bf91f5;
+    --orange:  #f5a623;
+    --red:     #ff5a4f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND GLOW ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 600px;
+    background: radial-gradient(ellipse at center, rgba(79,158,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(8,12,18,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(79,158,255,0.4), transparent);
+  }
+  .logo {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo span {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tagline { font-size: 0.78rem; color: var(--muted); }
+
+  /* ── BUDGET BAR (header) ── */
+  .budget-widget {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .budget-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .budget-label b { color: var(--text); }
+  .budget-track {
+    width: 100px;
+    height: 6px;
+    background: var(--border2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .budget-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--green);
+    transition: width 0.5s ease, background 0.5s ease;
+    width: 0%;
+  }
+  .budget-fill.notice  { background: var(--orange); }
+  .budget-fill.warning { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 72px auto 0;
+    padding: 0 24px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(79,158,255,0.1);
+    border: 1px solid rgba(79,158,255,0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--blue2);
+    letter-spacing: 0.3px;
+    margin-bottom: 24px;
+  }
+  .hero-badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 6px var(--blue);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
+
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .hero h1 .gradient-text {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 50%, var(--blue2) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+  .hero p {
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 40px;
+    line-height: 1.7;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── INPUT CARD ── */
+  .input-card {
+    background: linear-gradient(145deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: left;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(79,158,255,0.05);
+    transition: box-shadow 0.3s;
+  }
+  .input-card:focus-within {
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,158,255,0.15);
+  }
+  .input-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 96px;
+    line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(79,158,255,0.1);
+  }
+  textarea::placeholder { color: var(--muted); }
+
+  .examples {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .example-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.74rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .example-chip:hover {
+    border-color: var(--blue);
+    color: var(--blue2);
+    background: rgba(79,158,255,0.08);
+  }
+
+  .input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+  }
+  .hint { font-size: 0.74rem; color: var(--muted); }
+  .hint b { color: var(--purple); }
+
+  .btn-run {
+    background: linear-gradient(135deg, var(--blue), #3b7fd4);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 26px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 16px rgba(79,158,255,0.3);
+  }
+  .btn-run:hover   { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,158,255,0.45); }
+  .btn-run:active  { transform: translateY(0); }
+  .btn-run:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── PROGRESS SECTION ── */
+  .progress-section {
+    position: relative;
+    z-index: 1;
+    max-width: 940px;
+    margin: 48px auto;
+    padding: 0 24px;
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+  .progress-section.visible { display: block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+  .section-title {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── AGENT CHIPS ── */
+  .subtask-chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    min-height: 42px;
+    align-items: center;
+  }
+  .subtask-chip {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    max-width: 300px;
+    animation: fadeUp 0.3s ease;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .subtask-chip .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .subtask-chip.running {
+    border-color: rgba(79,158,255,0.4);
+    box-shadow: 0 0 12px rgba(79,158,255,0.1);
+  }
+  .subtask-chip.running .dot {
+    background: var(--blue);
+    box-shadow: 0 0 6px var(--blue);
+    animation: pulse 1s infinite;
+  }
+  .subtask-chip.done {
+    border-color: rgba(52,199,89,0.35);
+  }
+  .subtask-chip.done .dot {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: none;
+  }
+
+  /* ── TWO COLUMNS ── */
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 680px) { .columns { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .panel-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.15);
+  }
+
+  /* ── ACTIVITY LOG ── */
+  .log-body {
+    height: 300px;
+    overflow-y: auto;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.71rem;
+    line-height: 1.7;
+  }
+  .log-body::-webkit-scrollbar { width: 3px; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .log-entry {
+    padding: 1px 0;
+    animation: logIn 0.2s ease;
+  }
+  @keyframes logIn { from{opacity:0;transform:translateX(-4px)} to{opacity:1;transform:translateX(0)} }
+  .tag-agent   { color: var(--blue2); }
+  .tag-tool    { color: var(--purple); }
+  .tag-done    { color: var(--green); }
+  .tag-err     { color: var(--red); }
+  .tag-system  { color: var(--orange); }
+  .tag-compact {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(191,145,245,0.08);
+    border: 1px solid rgba(191,145,245,0.2);
+    border-radius: 5px; padding: 2px 8px;
+    color: var(--purple); font-size: 0.68rem;
+  }
+
+  /* ── FILE TABS ── */
+  .file-tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    padding: 6px 10px 0;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    scrollbar-width: none;
+  }
+  .file-tabs::-webkit-scrollbar { display: none; }
+  .file-tab {
+    padding: 5px 10px;
+    border-radius: 6px 6px 0 0;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    color: var(--muted);
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-bottom: none;
+    transition: color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .file-tab:hover  { color: var(--text); background: rgba(255,255,255,0.04); }
+  .file-tab.active {
+    background: var(--surface);
+    border-color: var(--border2);
+    color: var(--text);
+  }
+  .file-tab .tab-icon { font-size: 0.75rem; }
+
+  .file-content { height: 260px; overflow-y: auto; }
+  .file-content::-webkit-scrollbar { width: 3px; }
+  .file-content::-webkit-scrollbar-thumb { background: var(--border2); }
+  .file-content pre { margin: 0; border-radius: 0; }
+  .file-content code { font-size: 0.71rem !important; font-family: 'JetBrains Mono', monospace !important; }
+  .file-empty {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0.6;
+  }
+  .file-empty-icon { font-size: 1.6rem; }
+
+  /* ── PREVIEW PANEL ── */
+  .preview-panel {
+    margin-top: 14px;
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+    animation: fadeUp 0.4s ease;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .preview-panel.visible { display: block; }
+  .preview-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.2);
+  }
+  .preview-head-left { display: flex; align-items: center; gap: 8px; }
+  .preview-live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+  .btn-open {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 4px 12px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-open:hover { border-color: var(--blue); color: var(--blue2); background: rgba(79,158,255,0.08); }
+  .preview-iframe {
+    width: 100%;
+    height: 520px;
+    border: none;
+    background: #fff;
+    display: block;
+  }
+  .preview-loading {
+    height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    gap: 10px;
+    background: rgba(0,0,0,0.15);
+  }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RUN INSTRUCTIONS ── */
+  .run-card {
+    margin-top: 14px;
+    background: rgba(191,145,245,0.06);
+    border: 1px solid rgba(191,145,245,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: none;
+    animation: fadeUp 0.4s ease;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .run-card.visible { display: flex; }
+  .run-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .run-body .run-title { font-size: 0.7rem; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .run-body p { font-size: 0.84rem; color: var(--muted); line-height: 1.6; margin-bottom: 8px; }
+  .run-cmd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--green);
+    display: block;
+    margin-top: 6px;
+  }
+
+  /* ── SUMMARY CARD ── */
+  .summary-card {
+    background: linear-gradient(135deg, rgba(52,199,89,0.07), rgba(79,158,255,0.05));
+    border: 1px solid rgba(52,199,89,0.2);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+  .summary-card.visible { display: flex; align-items: flex-start; gap: 14px; }
+  .summary-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .summary-body .title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .summary-body p { font-size: 0.86rem; line-height: 1.6; color: #b0c4de; }
+
+  /* ── WORKSPACE ── */
+  .workspace-section {
+    position: relative;
+    z-index: 1;
+    max-width: 940px;
+    margin: 0 auto 80px;
+    padding: 0 24px;
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+  .workspace-section.visible { display: block; }
+
+  .workspace-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .file-list { display: flex; flex-direction: column; gap: 6px; }
+  .file-row {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.3s ease;
+  }
+  .file-row:hover {
+    border-color: rgba(79,158,255,0.3);
+    transform: translateX(3px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .file-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .fname {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--blue2);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .btn-dl {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    padding: 5px 14px;
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-dl:hover {
+    border-color: var(--blue);
+    color: var(--blue2);
+    background: rgba(79,158,255,0.08);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Mo<span>Craft</span></div>
+  <div class="tagline">Parallel AI agents that write real code</div>
+  <div class="budget-widget">
+    <div class="budget-track">
+      <div class="budget-fill" id="budget-fill"></div>
+    </div>
+    <div class="budget-label" id="budget-label">Tokens: —</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Powered by Claude · Parallel sub-agents
+  </div>
+  <h1>Describe what you want.<br><span class="gradient-text">Agents build it.</span></h1>
+  <p>MoCraft splits your request into parallel tasks, spawns sub-agents that write real code, and delivers working files — all in real time.</p>
+
+  <div class="input-card">
+    <div class="input-label">Your task</div>
+    <textarea id="task-input" placeholder="e.g. Build a Python snake game with score tracking and a high score file"></textarea>
+    <div class="examples">
+      <div class="example-chip" onclick="setExample(this)">Snake game in Python</div>
+      <div class="example-chip" onclick="setExample(this)">Todo list web app (HTML + JS)</div>
+      <div class="example-chip" onclick="setExample(this)">Calculator with history</div>
+      <div class="example-chip" onclick="setExample(this)">Password generator CLI</div>
+    </div>
+    <div class="input-footer">
+      <span class="hint">Sub-agents run in <b>parallel</b> — complex tasks finish faster</span>
+      <button class="btn-run" id="btn-run" onclick="submitTask()">
+        <span>▶</span> Build it
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-section" id="progress-section">
+  <div class="section-title">Sub-Agents</div>
+  <div class="subtask-chips" id="subtask-chips"></div>
+
+  <div class="columns">
+    <div class="panel">
+      <div class="panel-head">
+        <span>Activity Log</span>
+        <span id="log-status" style="color:var(--blue);font-size:0.68rem">running…</span>
+      </div>
+      <div class="log-body" id="log-body"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Live Files</div>
+      <div class="file-tabs" id="file-tabs"></div>
+      <div class="file-content" id="file-content">
+        <div class="file-empty">
+          <span class="file-empty-icon">📂</span>
+          Files appear here as agents write them
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live preview for HTML/JS apps -->
+  <div class="preview-panel" id="preview-panel">
+    <div class="preview-head">
+      <div class="preview-head-left">
+        <span class="preview-live-dot"></span>
+        Live Preview
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-open" onclick="reloadPreview()">↺ Reload</button>
+        <a id="preview-open-link" href="#" target="_blank" class="btn-open">↗ Open in tab</a>
+      </div>
+    </div>
+    <div class="preview-loading" id="preview-loading">
+      <div class="spinner"></div> Loading app preview…
+    </div>
+    <iframe id="preview-iframe" class="preview-iframe" style="display:none"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+  </div>
+
+  <!-- Run instructions for Python/CLI apps -->
+  <div class="run-card" id="run-card">
+    <div class="run-icon">🐍</div>
+    <div class="run-body">
+      <div class="run-title">How to run</div>
+      <p>Download the files and run them locally with Python:</p>
+      <code class="run-cmd" id="run-cmd">python main.py</code>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <div class="summary-icon">✅</div>
+    <div class="summary-body">
+      <div class="title">Build Complete</div>
+      <p id="summary-text"></p>
+    </div>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace-section" id="workspace-section">
+  <div class="workspace-header">
+    <div class="section-title" style="margin-bottom:0">Generated Files</div>
+  </div>
+  <div class="file-list" id="file-list"></div>
+</div>
+
+<script>
+  const files = {};
+  let activeTab    = null;
+  let agentStatus  = {};
+  let budgetPoller = null;
+
+  // ── token budget ──────────────────────────────────────
+  async function refreshBudget() {
+    try {
+      const data = await fetch('/status').then(r => r.json());
+      const fill  = document.getElementById('budget-fill');
+      const label = document.getElementById('budget-label');
+      fill.style.width = data.percent + '%';
+      fill.className = 'budget-fill' +
+        (data.level === 'WARNING' ? ' warning' :
+         data.level === 'NOTICE'  ? ' notice'  : '');
+      label.innerHTML = `Tokens: <b>${data.percent}%</b>`;
+      label.style.color = data.level === 'WARNING' ? 'var(--red)' :
+                          data.level === 'NOTICE'  ? 'var(--orange)' : 'var(--muted)';
+    } catch {}
+  }
+
+  function startBudgetPolling() {
+    refreshBudget();
+    budgetPoller = setInterval(refreshBudget, 2000);
+  }
+
+  function stopBudgetPolling() {
+    clearInterval(budgetPoller);
+    refreshBudget(); // final update
+  }
+
+  refreshBudget(); // show on page load
+  let htmlFiles   = [];   // track HTML files written this task
+  let pyFiles     = [];   // track Python files written this task
+
+  // ── file type icons ────────────────────────────────────
+  function fileIcon(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    const map = { py:'🐍', js:'⚡', ts:'🔷', html:'🌐', css:'🎨',
+                  json:'📋', md:'📝', txt:'📄', sh:'💻', yml:'⚙️',
+                  yaml:'⚙️', sql:'🗄️', rs:'🦀', go:'🐹', java:'☕' };
+    return map[ext] || '📁';
+  }
+
+  function setExample(el) {
+    document.getElementById('task-input').value = el.textContent;
+  }
+
+  // ── log ────────────────────────────────────────────────
+  function log(html) {
+    const box = document.getElementById('log-body');
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = html;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ── file tabs ──────────────────────────────────────────
+  function addOrUpdateFile(filename, content) {
+    files[filename] = content;
+    const tabBar = document.getElementById('file-tabs');
+    if (!tabBar.querySelector(`[data-file="${filename}"]`)) {
+      const tab = document.createElement('div');
+      tab.className = 'file-tab';
+      tab.dataset.file = filename;
+      tab.title = filename;
+      tab.innerHTML = `<span class="tab-icon">${fileIcon(filename)}</span>${filename.split('/').pop()}`;
+      tab.onclick = () => showTab(filename);
+      tabBar.appendChild(tab);
+    }
+    showTab(filename);
+  }
+
+  function showTab(filename) {
+    activeTab = filename;
+    document.querySelectorAll('.file-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.file === filename)
+    );
+    const ext = filename.split('.').pop();
+    const langMap = { py:'python', js:'javascript', ts:'typescript', html:'html',
+                      css:'css', md:'markdown', json:'json', sh:'bash', yml:'yaml' };
+    const escaped = files[filename]
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const box = document.getElementById('file-content');
+    box.innerHTML = `<pre><code class="language-${langMap[ext]||ext}">${escaped}</code></pre>`;
+    hljs.highlightAll();
+  }
+
+  function setChipStatus(agentId, status) {
+    const chip = document.querySelector(`.subtask-chip[data-agent="${agentId}"]`);
+    if (chip) chip.className = `subtask-chip ${status}`;
+  }
+
+  // ── submit ─────────────────────────────────────────────
+  let currentTaskId = null;
+
+  async function submitTask() {
+    const description = document.getElementById('task-input').value.trim();
+    if (!description) return;
+
+    document.getElementById('btn-run').disabled = true;
+    document.getElementById('subtask-chips').innerHTML =
+      '<div style="color:var(--muted);font-size:0.8rem;display:flex;align-items:center;gap:8px">' +
+      '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 6px var(--blue);animation:pulse 1s infinite"></span>' +
+      'Splitting task into subtasks…</div>';
+    document.getElementById('log-body').innerHTML = '';
+    document.getElementById('file-tabs').innerHTML = '';
+    document.getElementById('file-content').innerHTML =
+      '<div class="file-empty"><span class="file-empty-icon">📂</span>Files appear here as agents write them</div>';
+    document.getElementById('summary-card').classList.remove('visible');
+    document.getElementById('workspace-section').classList.remove('visible');
+    document.getElementById('progress-section').classList.add('visible');
+    document.getElementById('log-status').textContent = 'running…';
+    document.getElementById('log-status').style.color = 'var(--blue)';
+    Object.keys(files).forEach(k => delete files[k]);
+    agentStatus = {};
+    htmlFiles = [];
+    pyFiles   = [];
+    document.getElementById('preview-panel').classList.remove('visible');
+    document.getElementById('run-card').classList.remove('visible');
+
+    startBudgetPolling();
+
+    const res = await fetch('/task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description })
+    });
+    const { taskId, error } = await res.json();
+    if (error) { log(`<span class="tag-err">Error: ${error}</span>`); return; }
+    currentTaskId = taskId;
+
+    const es = new EventSource(`/task/${taskId}/stream`);
+
+    es.addEventListener('subtasks', e => {
+      const { subtasks } = JSON.parse(e.data);
+      const chips = document.getElementById('subtask-chips');
+      chips.innerHTML = '';
+      subtasks.forEach((t, i) => {
+        const chip = document.createElement('div');
+        chip.className = 'subtask-chip';
+        chip.dataset.agent = i + 1;
+        chip.innerHTML = `<span class="dot"></span><span>${t.substring(0, 60)}</span>`;
+        chips.appendChild(chip);
+      });
+      log(`<span class="tag-system">↳ Split into ${subtasks.length} parallel subtasks</span>`);
+    });
+
+    es.addEventListener('agent_start', e => {
+      const { agentId, task } = JSON.parse(e.data);
+      agentStatus[agentId] = 'running';
+      setChipStatus(agentId, 'running');
+      log(`<span class="tag-agent">[Agent ${agentId}]</span> Starting — ${task.substring(0, 55)}`);
+    });
+
+    es.addEventListener('tool_call', e => {
+      const { agentId, tool, args } = JSON.parse(e.data);
+      const preview = args.filename || (args.command || '').substring(0, 40);
+      log(`<span class="tag-agent">[Agent ${agentId}]</span> <span class="tag-tool">${tool}</span> ${preview}`);
+    });
+
+    es.addEventListener('file_written', e => {
+      const { filename, content } = JSON.parse(e.data);
+      addOrUpdateFile(filename, content);
+      const ext = filename.split('.').pop().toLowerCase();
+      if (ext === 'html') htmlFiles.push({ filename, content });
+      if (ext === 'py')   pyFiles.push(filename);
+    });
+
+    es.addEventListener('compact', e => {
+      const { condensed, remaining } = JSON.parse(e.data);
+      log(`<span class="tag-compact">⚡ Context compacted — ${condensed} messages summarised, ${remaining} kept</span>`);
+    });
+
+    es.addEventListener('tool_result', e => {
+      const { agentId, tool, result } = JSON.parse(e.data);
+      if (tool === 'run_command') {
+        const out = result.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        log(`<span class="tag-agent">[Agent ${agentId}]</span> <span style="color:var(--muted)">output →</span> <span style="color:var(--orange)">${out}</span>`);
+      }
+    });
+
+    es.addEventListener('agent_done', e => {
+      const { agentId, result } = JSON.parse(e.data);
+      agentStatus[agentId] = 'done';
+      setChipStatus(agentId, 'done');
+      log(`<span class="tag-done">[Agent ${agentId}] ✓</span> ${result.substring(0, 90)}`);
+    });
+
+    es.addEventListener('complete', e => {
+      const { summary } = JSON.parse(e.data);
+      document.getElementById('summary-text').textContent = summary;
+      document.getElementById('summary-card').classList.add('visible');
+      document.getElementById('log-status').textContent = 'done';
+      document.getElementById('log-status').style.color = 'var(--green)';
+      document.getElementById('btn-run').disabled = false;
+      log(`<span class="tag-done">✓ All agents complete</span>`);
+      stopBudgetPolling();
+      showAppPreview(taskId);
+      loadWorkspace(taskId);
+      es.close();
+    });
+
+    es.addEventListener('error', e => {
+      try {
+        const { message } = JSON.parse(e.data);
+        log(`<span class="tag-err">Error: ${message}</span>`);
+      } catch {}
+      document.getElementById('btn-run').disabled = false;
+      es.close();
+    });
+
+    es.onerror = () => { document.getElementById('btn-run').disabled = false; };
+  }
+
+  // ── app preview ───────────────────────────────────────
+  let currentPreviewUrl = null;
+
+  function reloadPreview() {
+    if (!currentPreviewUrl) return;
+    const iframe = document.getElementById('preview-iframe');
+    document.getElementById('preview-loading').style.display = 'flex';
+    iframe.style.display = 'none';
+    iframe.src = currentPreviewUrl + '?t=' + Date.now();
+  }
+
+  function showAppPreview(taskId) {
+    if (htmlFiles.length > 0) {
+      const entry = htmlFiles.find(f => f.filename.endsWith('index.html')) || htmlFiles[0];
+      const previewUrl = `/files/${taskId}/${entry.filename}`;
+      currentPreviewUrl = previewUrl;
+
+      const panel   = document.getElementById('preview-panel');
+      const iframe  = document.getElementById('preview-iframe');
+      const link    = document.getElementById('preview-open-link');
+      const loading = document.getElementById('preview-loading');
+
+      link.href  = previewUrl;
+      iframe.src = previewUrl;
+      loading.style.display = 'flex';
+      iframe.style.display  = 'none';
+      panel.classList.add('visible');
+
+      iframe.onload = () => {
+        loading.style.display = 'none';
+        iframe.style.display  = 'block';
+      };
+
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+      return;
+    }
+
+    if (pyFiles.length > 0) {
+      const main = pyFiles.find(f => f.includes('main.py') || f.includes('app.py')) || pyFiles[0];
+      const name = main.split('/').pop();
+      document.getElementById('run-cmd').textContent = `python ${name}`;
+      const card = document.getElementById('run-card');
+      card.classList.add('visible');
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    }
+  }
+
+  // ── workspace ──────────────────────────────────────────
+  async function loadWorkspace(taskId) {
+    const fileList = await (await fetch(`/workspace?task=${taskId}`)).json();
+    if (!fileList.length) return;
+
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+    fileList.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+      row.innerHTML = `
+        <span class="file-icon">${fileIcon(f)}</span>
+        <div class="file-info"><span class="fname">${f}</span></div>
+        <a href="/files/${taskId}/${f}" download="${f}">
+          <button class="btn-dl">↓ Download</button>
+        </a>`;
+      list.appendChild(row);
+    });
+    document.getElementById('workspace-section').classList.add('visible');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'Enter') submitTask();
+  });
+</script>
+</body>
+</html>

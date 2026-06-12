@@ -1,0 +1,12 @@
+services:
+  agent:
+    build: .
+    env_file: .env
+    volumes:
+      - workspace:/app/workspace
+      - logs:/app/logs
+    restart: unless-stopped
+
+volumes:
+  workspace:
+  logs:

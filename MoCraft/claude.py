@@ -18,6 +18,8 @@
 
 # ─── IMPORTS ────────────────────────────────────────────────
 
+import time
+import threading
 import requests
 from config_loader import API_KEY, AGENT_NAME, settings
 from history import get_recent_context
@@ -28,8 +30,10 @@ from history import get_recent_context
 # It is a module-level variable — any file that does
 # 'import claude' can read it with 'claude.tokens_spent'.
 # It is updated every time ask_claude() is called.
+# _token_lock guards the counter against concurrent sub-agent updates.
 
 tokens_spent = 0
+_token_lock  = threading.Lock()
 
 
 # ─── ASK CLAUDE ─────────────────────────────────────────────
@@ -76,30 +80,53 @@ def ask_claude(current_message, sender, template_context=None):
         }
     ]
 
-    response = requests.post(
-        url="https://api.anthropic.com/v1/messages",
-        headers={
-            "x-api-key": API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        },
-        json={
-            "model": settings["model"],  # e.g. claude-haiku-4-5
-            "max_tokens": settings["max_tokens"],  # max length of reply
-            "system": settings["system_prompt"],
-            "messages": messages,
-        },
-    )
-    data = response.json()
+    # Retry up to 3 times for transient errors (rate limits, overloaded)
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                url="https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": settings["model"],
+                    "max_tokens": settings["max_tokens"],
+                    "system": settings["system_prompt"],
+                    "messages": messages,
+                },
+                timeout=60,
+            )
+        except requests.exceptions.RequestException as exc:
+            print(f"[CLAUDE] Network error (attempt {attempt + 1}/3): {exc}")
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+                continue
+            return "I encountered a network error and could not complete the request."
 
-    if "error" in data or "content" not in data:
-        print(f"[CLAUDE] API error response: {data}")
-        return "I encountered an API error and could not complete the request. Please try again."
+        data = response.json()
 
-    # Count and record how many tokens this call used
-    update_tokens(data["usage"]["input_tokens"], data["usage"]["output_tokens"])
+        # Retry on rate limit or overloaded — wait, then try again
+        if "error" in data:
+            err_type = data.get("error", {}).get("type", "unknown")
+            print(f"[CLAUDE] API error (attempt {attempt + 1}/3): HTTP {response.status_code} — {err_type}")
+            if err_type in ("rate_limit_error", "overloaded_error") and attempt < 2:
+                wait = 5 * (attempt + 1)   # 5s, 10s
+                print(f"[CLAUDE] Retrying in {wait}s...")
+                time.sleep(wait)
+                continue
+            return "I encountered an API error and could not complete the request. Please try again."
 
-    return data["content"][0]["text"]
+        if "content" not in data:
+            print(f"[CLAUDE] Unexpected response (attempt {attempt + 1}/3): {data}")
+            return "I encountered an API error and could not complete the request. Please try again."
+
+        # Success — count tokens and return reply
+        update_tokens(data["usage"]["input_tokens"], data["usage"]["output_tokens"])
+        return data["content"][0]["text"]
+
+    return "I encountered an API error and could not complete the request. Please try again."
 
 
 # ─── BUDGET CHECK ───────────────────────────────────────────
@@ -127,10 +154,11 @@ def update_tokens(input_tokens, output_tokens):
     """Add tokens used by one Claude call to the running total."""
     global tokens_spent
     budget = settings["max_tokens_budget"]
-    tokens_spent += input_tokens + output_tokens
-    pct = (tokens_spent / budget) * 100
+    with _token_lock:
+        tokens_spent += input_tokens + output_tokens
+        pct = (tokens_spent / budget) * 100
     print(f"[TOKENS] Spent so far: {tokens_spent}/{budget} ({pct:.1f}%)")
     if pct >= 90:
         print(f"[BUDGET] WARNING: Token budget is {pct:.1f}% used ({tokens_spent}/{budget}). Approaching limit!")
-    elif pct >= 70:
+    elif pct >= 75:
         print(f"[BUDGET] NOTICE: Token budget is {pct:.1f}% used ({tokens_spent}/{budget}).")
