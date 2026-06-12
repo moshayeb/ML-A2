@@ -33,7 +33,7 @@ from history import get_recent_context
 # _token_lock guards the counter against concurrent sub-agent updates.
 
 tokens_spent = 0
-_token_lock  = threading.Lock()
+_token_lock = threading.Lock()
 
 
 # ─── ASK CLAUDE ─────────────────────────────────────────────
@@ -101,7 +101,7 @@ def ask_claude(current_message, sender, template_context=None):
         except requests.exceptions.RequestException as exc:
             print(f"[CLAUDE] Network error (attempt {attempt + 1}/3): {exc}")
             if attempt < 2:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             return "I encountered a network error and could not complete the request."
 
@@ -110,9 +110,11 @@ def ask_claude(current_message, sender, template_context=None):
         # Retry on rate limit or overloaded — wait, then try again
         if "error" in data:
             err_type = data.get("error", {}).get("type", "unknown")
-            print(f"[CLAUDE] API error (attempt {attempt + 1}/3): HTTP {response.status_code} — {err_type}")
+            print(
+                f"[CLAUDE] API error (attempt {attempt + 1}/3): HTTP {response.status_code} — {err_type}"
+            )
             if err_type in ("rate_limit_error", "overloaded_error") and attempt < 2:
-                wait = 5 * (attempt + 1)   # 5s, 10s
+                wait = 5 * (attempt + 1)  # 5s, 10s
                 print(f"[CLAUDE] Retrying in {wait}s...")
                 time.sleep(wait)
                 continue
@@ -123,7 +125,8 @@ def ask_claude(current_message, sender, template_context=None):
             return "I encountered an API error and could not complete the request. Please try again."
 
         # Success — count tokens and return reply
-        update_tokens(data["usage"]["input_tokens"], data["usage"]["output_tokens"])
+        usage = data.get("usage", {})
+        update_tokens(usage.get("input_tokens", 0), usage.get("output_tokens", 0))
         return data["content"][0]["text"]
 
     return "I encountered an API error and could not complete the request. Please try again."
@@ -154,11 +157,20 @@ def update_tokens(input_tokens, output_tokens):
     """Add tokens used by one Claude call to the running total."""
     global tokens_spent
     budget = settings["max_tokens_budget"]
+    if budget <= 0:
+        print(
+            "[TOKENS] WARNING: Token budget is set to 0 or negative. Token tracking disabled."
+        )
+        return
     with _token_lock:
         tokens_spent += input_tokens + output_tokens
         pct = (tokens_spent / budget) * 100
     print(f"[TOKENS] Spent so far: {tokens_spent}/{budget} ({pct:.1f}%)")
     if pct >= 90:
-        print(f"[BUDGET] WARNING: Token budget is {pct:.1f}% used ({tokens_spent}/{budget}). Approaching limit!")
+        print(
+            f"[BUDGET] WARNING: Token budget is {pct:.1f}% used ({tokens_spent}/{budget}). Approaching limit!"
+        )
     elif pct >= 75:
-        print(f"[BUDGET] NOTICE: Token budget is {pct:.1f}% used ({tokens_spent}/{budget}).")
+        print(
+            f"[BUDGET] NOTICE: Token budget is {pct:.1f}% used ({tokens_spent}/{budget})."
+        )

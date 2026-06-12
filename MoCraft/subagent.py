@@ -264,7 +264,14 @@ class SubAgent:
                     continue
                 return None
 
-            data = resp.json()
+            try:
+                data = resp.json()
+            except Exception:
+                print(f"[SUB-{self.agent_id}] JSON decode error (attempt {attempt + 1}/3)")
+                if attempt < 2:
+                    time.sleep(2 ** attempt)
+                    continue
+                return None
             if "error" in data:
                 err_type = data.get("error", {}).get("type", "unknown")
                 print(f"[SUB-{self.agent_id}] API error (attempt {attempt + 1}/3): HTTP {resp.status_code} — {err_type}")
@@ -346,7 +353,10 @@ def split_task(task_description: str) -> list:
             },
             timeout=30,
         )
-        data = resp.json()
+        try:
+            data = resp.json()
+        except Exception:
+            return [task_description]
         if "error" in data or "content" not in data:
             return [task_description]
 

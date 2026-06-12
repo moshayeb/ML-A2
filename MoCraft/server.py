@@ -106,6 +106,8 @@ async def stream_task(task_id: str):
 
 @app.get("/workspace")
 def list_workspace(task: str = None):
+    if task and (".." in task or task.startswith("/") or task.startswith("\\")):
+        return []
     root = WORKSPACE / task if task else WORKSPACE
 
     def walk(d, base=""):

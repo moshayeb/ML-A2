@@ -40,11 +40,15 @@ def is_safe_command(command):
     Returns True if the command is safe to run.
     Returns False if it should be blocked.
     """
+    import os as _os
     command_lower = command.lower().strip()
+    # Extract the bare executable name so /bin/rm, ./rm, etc. are caught too
+    first_token = command_lower.split()[0] if command_lower.split() else ""
+    base_cmd = _os.path.basename(first_token)
 
     # Check for blocked commands
     for blocked in BLOCKED_COMMANDS:
-        if command_lower.startswith(blocked):
+        if command_lower.startswith(blocked) or base_cmd == blocked:
             print(f"[SAFETY] Blocked dangerous command: {blocked}")
             return False
 

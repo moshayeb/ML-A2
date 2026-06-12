@@ -884,6 +884,12 @@
     document.getElementById('task-input').value = el.textContent;
   }
 
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   // ── log ────────────────────────────────────────────────
   function log(html) {
     const box = document.getElementById('log-body');
@@ -979,7 +985,7 @@
         const chip = document.createElement('div');
         chip.className = 'subtask-chip';
         chip.dataset.agent = i + 1;
-        chip.innerHTML = `<span class="dot"></span><span>${t.substring(0, 60)}</span>`;
+        chip.innerHTML = `<span class="dot"></span><span>${esc(t.substring(0, 60))}</span>`;
         chips.appendChild(chip);
       });
       log(`<span class="tag-system">↳ Split into ${subtasks.length} parallel subtasks</span>`);
@@ -989,13 +995,13 @@
       const { agentId, task } = JSON.parse(e.data);
       agentStatus[agentId] = 'running';
       setChipStatus(agentId, 'running');
-      log(`<span class="tag-agent">[Agent ${agentId}]</span> Starting — ${task.substring(0, 55)}`);
+      log(`<span class="tag-agent">[Agent ${esc(agentId)}]</span> Starting — ${esc(task.substring(0, 55))}`);
     });
 
     es.addEventListener('tool_call', e => {
       const { agentId, tool, args } = JSON.parse(e.data);
       const preview = args.filename || (args.command || '').substring(0, 40);
-      log(`<span class="tag-agent">[Agent ${agentId}]</span> <span class="tag-tool">${tool}</span> ${preview}`);
+      log(`<span class="tag-agent">[Agent ${esc(agentId)}]</span> <span class="tag-tool">${esc(tool)}</span> ${esc(preview)}`);
     });
 
     es.addEventListener('file_written', e => {

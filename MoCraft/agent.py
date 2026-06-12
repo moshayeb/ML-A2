@@ -99,6 +99,7 @@ def handle_task_web(content: str, task_id: str, emit_fn):
                 f"{combined}\n\nWrite 2 sentences summarising what was built.",
                 "SYSTEM",
             )
+            save_message({"role": "assistant", "content": summary})
             emit_fn("complete", {"summary": summary})
             return
 
@@ -106,4 +107,5 @@ def handle_task_web(content: str, task_id: str, emit_fn):
     emit_fn("subtasks", {"subtasks": [content]})
     print("[THINKING] Running single-agent ReAct loop (web)...")
     result = SubAgent(content, 1, task_id=task_id, emit_fn=emit_fn).run()
+    save_message({"role": "assistant", "content": result})
     emit_fn("complete", {"summary": result})
