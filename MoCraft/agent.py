@@ -4,13 +4,15 @@ from history import save_message, compact_if_needed
 from subagent import SubAgent, run_parallel, split_task
 
 
-_CODE_VERBS = ["write", "create", "build", "make", "implement", "add", "develop", "generate"]
+_SYSTEM_QUERIES = ["how many", "check", "list", "show me", "what is", "tell me", "how much"]
 
 
 def is_complex_task(content: str) -> bool:
-    """Any coding task is sent to split_task() — Claude decides if it needs multiple agents."""
+    """Always split unless it's clearly a plain system/info query."""
     lower = content.lower()
-    return any(v in lower for v in _CODE_VERBS)
+    if any(q in lower for q in _SYSTEM_QUERIES):
+        return False
+    return True
 
 
 def handle_task(content: str):
