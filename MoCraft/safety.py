@@ -21,17 +21,12 @@ BLOCKED_COMMANDS = [
     ":(){:|:&};:",  # fork bomb
 ]
 
-# Characters that allow command chaining — also dangerous
+# Only block true code-injection patterns — pipes and chaining are needed for real bash work
 BLOCKED_PATTERNS = [
-    "&&",
-    "||",
-    ";",
-    "|",
-    ">",
-    ">>",
-    "<",
-    "$(",
-    "`",
+    "$(",   # command substitution
+    "`",    # backtick substitution
+    ">/dev/sd",   # block writing to raw devices
+    ">/etc/",     # block overwriting system files
 ]
 
 
