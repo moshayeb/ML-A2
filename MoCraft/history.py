@@ -42,7 +42,7 @@ def get_recent_context() -> str:
 
 
 def compact_if_needed():
-    threshold = settings.get("compaction_threshold", 50)
+    threshold = settings.get("compaction_threshold", 4)
     history = load_all_history()
     if len(history) <= threshold:
         return
