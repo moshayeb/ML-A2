@@ -4,24 +4,13 @@ from history import save_message, compact_if_needed
 from subagent import SubAgent, run_parallel, split_task
 
 
-_PARALLEL_KEYWORDS = [
-    "use sub-agents", "use subagents", "spawn sub-agents",
-    "in parallel", "simultaneously", "at the same time",
-    "parallel agents",
-]
-_CODE_VERBS = ["write", "create", "build", "make", "implement", "add"]
+_CODE_VERBS = ["write", "create", "build", "make", "implement", "add", "develop", "generate"]
 
 
 def is_complex_task(content: str) -> bool:
+    """Any coding task is sent to split_task() — Claude decides if it needs multiple agents."""
     lower = content.lower()
-    if any(kw in lower for kw in _PARALLEL_KEYWORDS):
-        return True
-    if len(content) < 80:
-        return False
-    has_code_verb = any(v in lower for v in _CODE_VERBS)
-    many_ands     = lower.count(" and ") >= 2
-    and_and_comma = lower.count(" and ") >= 1 and lower.count(",") >= 1
-    return has_code_verb and (many_ands or and_and_comma)
+    return any(v in lower for v in _CODE_VERBS)
 
 
 def handle_task(content: str):
