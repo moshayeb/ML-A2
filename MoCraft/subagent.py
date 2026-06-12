@@ -340,16 +340,17 @@ def split_task(task_description: str) -> list:
                 "model":      settings["model"],
                 "max_tokens": 200,
                 "system": (
-                    "You split software development tasks into 2-3 independent parts "
-                    "that can be built in parallel. Reply with ONLY a JSON array of "
-                    'strings. Example: ["Write the data model", "Write the API layer", '
-                    '"Write the tests"]. Each part must be self-contained.'
+                    "You split software development tasks into exactly 2 or 3 independent parts "
+                    "that can be built in parallel by separate agents. ALWAYS return 2 or 3 parts, "
+                    "never 1. Reply with ONLY a JSON array of strings. "
+                    'Example: ["Write the game logic and movement", "Write the rendering and UI", '
+                    '"Write the score tracking and file saving"]. Each part must be self-contained.'
                 ),
                 "messages": [{
                     "role": "user",
                     "content": (
-                        f"Split this into 2-3 independent parallel subtasks:\n\n"
-                        f"{task_description}"
+                        f"Split this coding task into 2-3 independent parallel subtasks. "
+                        f"Always return at least 2 parts:\n\n{task_description}"
                     ),
                 }],
             },
