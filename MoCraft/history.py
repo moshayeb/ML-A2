@@ -47,10 +47,10 @@ def compact_if_needed():
     if len(history) <= threshold:
         return
 
-    text = "\n".join(
-        f"{m.get('role', m.get('agent_name', 'unknown'))}: {m.get('content', '')}"
-        for m in to_summarise
-    )
+    half = len(history) // 2
+    to_summarise = history[:half]
+    to_keep = history[half:]
+
     text = "\n".join(
         f"{m.get('role', m.get('agent_name', 'unknown'))}: {m.get('content', '')}"
         for m in to_summarise

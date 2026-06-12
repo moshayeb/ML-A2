@@ -545,6 +545,7 @@
     pointer-events: auto;
     max-width: 300px;
   }
+  .toast.info    { background: rgba(79,158,255,0.15);  border-color: rgba(79,158,255,0.4);  color: var(--blue); }
   .toast.notice  { background: rgba(245,166,35,0.15); border-color: rgba(245,166,35,0.4); color: var(--orange); }
   .toast.warning { background: rgba(255,90,79,0.15);  border-color: rgba(255,90,79,0.4);  color: var(--red); }
   @keyframes toastIn  { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
@@ -812,12 +813,14 @@
 
   // ── toast notifications ───────────────────────────────
   let lastBudgetLevel = 'OK';
+  let shown5pct = false;
 
   function showToast(message, type) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = 'toast ' + type;
-    toast.innerHTML = (type === 'warning' ? '🔴' : '🟠') + ' ' + message;
+    const icon = type === 'warning' ? '🔴' : type === 'notice' ? '🟠' : '🔵';
+    toast.innerHTML = icon + ' ' + message;
     container.appendChild(toast);
     setTimeout(() => {
       toast.style.animation = 'toastOut 0.3s ease forwards';
@@ -849,6 +852,10 @@
       label.innerHTML = `Tokens: <b>${data.percent}%</b>`;
       label.style.color = data.level === 'WARNING' ? 'var(--red)' :
                           data.level === 'NOTICE'  ? 'var(--orange)' : 'var(--muted)';
+      if (!shown5pct && data.percent >= 5) {
+        showToast('Token budget active — ' + data.percent + '% used', 'info');
+        shown5pct = true;
+      }
       if (data.level !== lastBudgetLevel) {
         if (data.level === 'WARNING') showToast('Token budget at ' + data.percent + '% — agent will stop at 100%', 'warning');
         else if (data.level === 'NOTICE') showToast('Token budget at ' + data.percent + '% — approaching limit', 'notice');
@@ -959,6 +966,8 @@
     document.getElementById('log-status').style.color = 'var(--blue)';
     Object.keys(files).forEach(k => delete files[k]);
     agentStatus = {};
+    shown5pct = false;
+    lastBudgetLevel = 'OK';
     htmlFiles = [];
     pyFiles   = [];
     document.getElementById('preview-panel').classList.remove('visible');
