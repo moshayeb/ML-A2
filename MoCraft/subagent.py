@@ -34,7 +34,9 @@ SUBAGENT_SYSTEM_PROMPT = (
     "the result, then decide what to do next. When the task is fully done, write "
     "a short summary of what you accomplished — no tool call needed at that point. "
     "Never report fake output. Only describe what the tools actually returned. "
-    "Never call the same tool with the same arguments twice in a row."
+    "Never call the same tool with the same arguments twice in a row. "
+    "For system queries (disk space, processes, environment info) use run_command "
+    "with appropriate shell commands such as 'df -h', 'ps aux', or 'ls'."
 )
 
 TOOLS = [
