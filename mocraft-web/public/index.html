@@ -521,6 +521,51 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── TOAST NOTIFICATIONS ── */
+  #toast-container {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid;
+    backdrop-filter: blur(12px);
+    animation: toastIn 0.3s ease;
+    pointer-events: auto;
+    max-width: 300px;
+  }
+  .toast.notice  { background: rgba(245,166,35,0.15); border-color: rgba(245,166,35,0.4); color: var(--orange); }
+  .toast.warning { background: rgba(255,90,79,0.15);  border-color: rgba(255,90,79,0.4);  color: var(--red); }
+  @keyframes toastIn  { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes toastOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(20px)} }
+
+  /* ── COPY BUTTON ── */
+  .btn-copy {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 3px 10px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .btn-copy:hover  { border-color: var(--blue);  color: var(--blue2); background: rgba(79,158,255,0.08); }
+  .btn-copy.copied { border-color: var(--green); color: var(--green); }
+
   /* ── RUN INSTRUCTIONS ── */
   .run-card {
     margin-top: 14px;
@@ -644,6 +689,8 @@
 </head>
 <body>
 
+<div id="toast-container"></div>
+
 <header>
   <div class="logo">Mo<span>Craft</span></div>
   <div class="tagline">Parallel AI agents that write real code</div>
@@ -697,7 +744,10 @@
     </div>
 
     <div class="panel">
-      <div class="panel-head">Live Files</div>
+      <div class="panel-head">
+        <span>Live Files</span>
+        <button class="btn-copy" id="btn-copy" onclick="copyActiveFile()">Copy</button>
+      </div>
       <div class="file-tabs" id="file-tabs"></div>
       <div class="file-content" id="file-content">
         <div class="file-empty">
@@ -760,6 +810,32 @@
   let agentStatus  = {};
   let budgetPoller = null;
 
+  // ── toast notifications ───────────────────────────────
+  let lastBudgetLevel = 'OK';
+
+  function showToast(message, type) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML = (type === 'warning' ? '🔴' : '🟠') + ' ' + message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'toastOut 0.3s ease forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
+  // ── copy active file ──────────────────────────────────
+  function copyActiveFile() {
+    if (!activeTab || !files[activeTab]) return;
+    navigator.clipboard.writeText(files[activeTab]).then(() => {
+      const btn = document.getElementById('btn-copy');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+
   // ── token budget ──────────────────────────────────────
   async function refreshBudget() {
     try {
@@ -773,6 +849,11 @@
       label.innerHTML = `Tokens: <b>${data.percent}%</b>`;
       label.style.color = data.level === 'WARNING' ? 'var(--red)' :
                           data.level === 'NOTICE'  ? 'var(--orange)' : 'var(--muted)';
+      if (data.level !== lastBudgetLevel) {
+        if (data.level === 'WARNING') showToast('Token budget at ' + data.percent + '% — agent will stop at 100%', 'warning');
+        else if (data.level === 'NOTICE') showToast('Token budget at ' + data.percent + '% — approaching limit', 'notice');
+        lastBudgetLevel = data.level;
+      }
     } catch {}
   }
 
