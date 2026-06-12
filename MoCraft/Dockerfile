@@ -9,4 +9,6 @@ COPY . .
 
 RUN mkdir -p logs workspace
 
-CMD ["python", "main.py"]
+EXPOSE 8000
+
+CMD ["python", "server.py"]
